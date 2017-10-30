@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+
+<script type=text/javascript>
+  $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+</script>
+
+
+
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+<link rel="icon" type="image/png"
+	href="{{url_for('static', filename='images/speedometer.png') }}" />
+<meta name="description" content="">
+<meta name="author" content="Martin Plaas">
+<link rel="stylesheet" type="text/css"
+	href="{{url_for('static', filename='css/flaticon.css') }}">
+<link
+	href="https://fonts.googleapis.com/css?family=Iceberg|Iceland|Monofett"
+	rel="stylesheet">
+
+<title>GaStroWa Logger</title>
+
+
+<!-- Bootstrap core CSS -->
+<!-- 
+<link href="{{url_for('static', filename='css/bootstrap.min.css') }}"
+	rel="stylesheet">
+-->
+
+<link rel="stylesheet"
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"
+	integrity="sha384-3ceskX3iaEnIogmQchP8opvBy3Mi7Ce34nWjpBIwVTHfGYWQS9jwHDVRnpKKHJg7"
+	crossorigin="anonymous"></script>
+<script
+	src="{{url_for('static', filename='js/constants.js') }}"></script>
+<script type="text/javascript">
+	sensors = {{sensors|tojson}};
+</script>
+<!-- 
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+ -->
+<!-- Custom styles for this template -->
+<link href="{{url_for('static', filename='css/dashboard.css') }}"
+	rel="stylesheet">
+
+<link href="{{url_for('static', filename='css/gastrowalogger.css') }}"
+	rel="stylesheet">
+
+</head>
+
+<body>
+	<nav class="navbar navbar-inverse navbar-fixed-top">
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed"
+					data-toggle="collapse" data-target="#navbar" aria-expanded="false"
+					aria-controls="navbar">
+					<span class="sr-only">Toggle navigation</span> <span
+						class="icon-bar"></span> <span class="icon-bar"></span> <span
+						class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="/"><span class="flaticon-flame"
+					style="color: #ff6600;"></span><span class="flaticon-lightning"
+					style="color: #ffcc00;"></span><span class="flaticon-raindrop"
+					style="color: #0099ff;"></span> GaStroWa Logger</a>
+			</div>
+			<div id="navbar" class="navbar-collapse collapse">
+				<ul class="nav navbar-nav navbar-right">
+
+
+
+				<li class="dropdown"><a class="dropdown-toggle"
+					data-toggle="dropdown" href="#"> <span class="flaticon-flame"
+						style="color: #ff6600;"></span> Gas<span class="caret"></span></a>
+					<ul class="dropdown-menu">
+						<!-- 							<li><a href="/gas/gas_charts"><span -->
+						<!-- 									class="flaticon-stats"></span> Diagramme</a></li> -->
+						<li><a href="/charts?type=gas"><span
+								class="flaticon-stats"></span> Diagramme</a></li>
+						<li><a href="/meters/meter_reading?type=gas"><span
+								class="flaticon-edit"></span> Zählerstand</a></li>
+						<li><a href="/gas/costs"><span class="flaticon-coins"></span>
+								Kosten</a></li>
+						<li role="separator" class="divider"></li>
+						<li><a href="/sensor/sensor?type=gas"><span
+								class="flaticon-wrench"></span> Sensor kalibrieren</a></li>
+					</ul></li>
+
+
+				<li><a href="#"><span class="flaticon-lightning"
+						style="color: #ffcc00;"></span> Strom</a></li>
+
+				<!-- 					WATER		TODO: DROPDOWN if more than one sensor present -->
+
+				<li class="dropdown"><a class="dropdown-toggle"
+					data-toggle="dropdown" href="#"> <span
+						class="flaticon-raindrop" style="color: #0099ff;"></span> Wasser<span
+						class="caret"></span></a>
+					<ul class="dropdown-menu">
+						<li><a href="/water/wasserverbrauch"><span
+								class="flaticon-speedometer"></span> Aktueller Verbrauch</a></li>
+						<li><a href="/charts?type=water"><span
+								class="flaticon-stats"></span> Diagramme</a></li>
+						<li><a href="/meters/meter_reading?type=water"><span
+								class="flaticon-edit"></span> Zählerstand</a></li>
+						<li><a href="/gas/costs"><span class="flaticon-coins"></span>
+								Kosten</a></li>
+						<li role="separator" class="divider"></li>
+						<li><a href="/sensor/sensor?type=water"><span
+								class="flaticon-wrench"></span> Sensor kalibrieren</a></li>
+					</ul></li>
+
+				<!-- 			END		WATER		 -->
+
+				<li><a href="#"><span class="flaticon-cloudy"
+						style="color: #ddd;"></span> Wetter</a></li>
+
+				<li><a href="/settings"><span class="flaticon-settings"></span>
+						Settings</a></li>
+				</ul>
+
+			</div>
+		</div>
+	</nav>
+
+	<div class="container-fluid">
+		<div class="row">
+
+			<div class="col-sm-12 main">
+
+
+				{% with messages = get_flashed_messages(with_categories=true) %} {%
+				if messages %}
+				<div>
+					{% for category, message in messages %}
+					<div class="alert alert-{{ category }}">{{ message }}</div>
+					{% endfor %}
+				</div>
+
+				{% endif %} {% endwith %} {% block body %}{% endblock %}
+			</div>
+
+		</div>
+		<div class="row">
+
+			<div class="col-sm-12 main">{% block footer %}{% endblock %}</div>
+		</div>
+	</div>
+
+	<!-- Bootstrap core JavaScript
+    ================================================== -->
+	<!-- Placed at the end of the document so the pages load faster -->
+
+	<!--  
+	<script src="{{url_for('static', filename='js/bootstrap.min.js') }}"></script>
+-->
+
+<div id="alert-modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title"><span id="alert-modal-header"></span></h4>
+      </div>
+      <div class="modal-body">
+        <p id="alert-modal-message"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+	<script
+		src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.3.7/js/tether.min.js"
+		integrity="sha384-XTs3FgkjiBgo8qjEjBk0tGmf3wPrWtA6coPfQDfFEY8AnYJwjalXCiosYRBIBZX8"
+		crossorigin="anonymous"></script>
+	<script
+		src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+		
+
+</body>
+</html>
+

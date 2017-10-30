@@ -1,0 +1,57 @@
+{% extends "layout.html" %} {% block body %}
+
+
+<link href="{{url_for('static', filename='css/jquery-ui.min.css') }}"
+	rel="stylesheet">
+<script type=text/javascript
+	src="{{url_for('static', filename='js/jquery-ui.min.js') }}"></script>
+
+<script>
+	$(function() {
+		$('[data-toggle="tooltip"]').tooltip()
+	})
+
+	$('#myTabs a').click(function(e) {
+		e.preventDefault()
+		$(this).tab('show')
+	})
+</script>
+
+
+<div class="row">
+	<div class="col-sm-12">
+		<div class="page-header">
+			<h3>
+				<span class="flaticon-settings" style="color: #444;"></span>
+				Settings <small>hmmm</small>
+			</h3>
+		</div>
+	</div>
+</div>
+
+<div>
+
+	<!-- Nav tabs -->
+	<ul class="nav nav-tabs" role="tablist">
+		<li role="presentation" class="active"><a href="#home"
+			aria-controls="home" role="tab" data-toggle="tab">General</a></li>
+		<li role="presentation"><a href="#serialbus"
+			aria-controls="serialbus" role="tab" data-toggle="tab">SerialBus</a></li>
+		<li role="presentation"><a href="#messages"
+			aria-controls="messages" role="tab" data-toggle="tab">Weather</a></li>
+		<li role="presentation"><a href="#sensors"
+			aria-controls="sensors" role="tab" data-toggle="tab">Sensors</a></li>
+	</ul>
+
+	<!-- Tab panes -->
+	<div class="tab-content">
+		<div role="tabpanel" class="tab-pane active" id="home">{% include "settings_general.html" %}</div>
+		<div role="tabpanel" class="tab-pane" id="serialbus">
+		{% include "settings_serialbus.html" %}</div>
+		<div role="tabpanel" class="tab-pane" id="messages">sdfgsdffffffffffff</div>
+		<div role="tabpanel" class="tab-pane" id="sensors">{% include "settings_sensors.html" %}</div>
+	</div>
+
+</div>
+
+{% endblock %}

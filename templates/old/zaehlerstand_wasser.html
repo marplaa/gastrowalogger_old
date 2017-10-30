@@ -1,0 +1,195 @@
+{% extends "layout.html" %} {% block body %}
+
+
+<link href="{{url_for('static', filename='css/jquery-ui.min.css') }}"
+	rel="stylesheet">
+<script type=text/javascript
+	src="{{url_for('static', filename='js/jquery-ui.min.js') }}"></script>
+
+<script>
+	$(function() {
+		$('[data-toggle="tooltip"]').tooltip()
+	})
+</script>
+
+
+<div class="row">
+	<div class="col-sm-12">
+		<div class="page-header">
+			<h3>
+				<span class="flaticon-raindrop" style="color: #0099ff;"></span>
+				Wasserzählerstände <small>Abgelesen und errechnet</small>
+			</h3>
+		</div>
+	</div>
+</div>
+
+<div class="row">
+
+	<div class="col-sm-5 col-md-4 col-lg-3 col-xl-2">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">
+					Aktueller Zählerstand <small>errechnet</small>
+				</h3>
+			</div>
+			<div class="panel-body">
+
+
+				<div style="text-align: right; border: 3px solid red; float: left">
+					<span
+						style="font-family: Iceland; font-size: 30pt; margin: 0px 10px 0px 10px">{{
+						meter_reading }}</span>
+				</div>
+				<div style="float: left">
+					<span style="font-size: 30pt; margin: 0px 10px 0px 5px">m³</span>
+				</div>
+				<div class="clearfix"></div>
+
+
+			</div>
+		</div>
+	</div>
+
+	<div class="col-sm-5 col-md-4 col-lg-4 col-xl-3">
+		<div class="panel panel-default" ">
+			<div class="panel-heading">
+				<h3 class="panel-title"><span class="flaticon-visibility" style="margin-right:10px;"></span>Abgelesene Zählerstände</h3>
+			</div>
+			<div class="panel-body">
+
+				<button type="button" class="btn btn-primary pull-right"
+					data-toggle="modal" data-target="#ablesenModal">Ablesen</button>
+				
+				
+			
+
+
+
+			</div>
+
+			<!-- Table -->
+			<table class="table">
+				<tr>
+					<th>Datum</th>
+					<th style="text-align: right;">Zählerstand</th>
+					<th width="40"><span class="glyphicon glyphicon-pushpin"
+						style="color: #333;"></span></th>
+				</tr>
+				{% for entry in entries %} {% if entry.anmerkung %}
+				<tr title="{{ entry.anmerkung }}" data-toggle="tooltip"
+					data-placement="bottom">{% else %}
+				<tr>
+					{% endif %}
+					<td style="vertical-align: middle;">{{ entry.datum }}</td>
+					<td style="text-align: right;"><span
+						style="font-family: Iceland; font-size: 15pt">{{
+							entry.stand }}</span></td>
+					<td style="vertical-align: middle;">{% if entry.anmerkung %} <span
+						class="glyphicon glyphicon-pushpin" style="color: green;"></span>
+						{% else %} <span class="glyphicon glyphicon-pushpin"
+						style="color: grey;"></span> {% endif %}
+					</td>
+				</tr>
+				{% else %}
+				<tr>
+					<td colspan="3">Bisher keine Zählerstände eingetragen
+					</th>
+				</tr>
+				{% endfor %}
+
+
+
+			</table>
+
+
+
+		</div>
+	</div>
+
+	<div class="col-sm-5 col-md-4 col-lg-3 col-xl-2">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title"><span
+									class="flaticon-coins" style="margin-right:10px;"></span>Gebühren</h3>
+			</div>
+			<div class="panel-body">
+				<form class="form-inline" id="costs">
+
+					<div class="form-group">
+						<label>Seit:</label> <span class="flaticon-calendar"
+							style="color: #000;"></span> <input type="text"
+							class="form-control" name="from" id="von_datepicker" size="8"
+							onchange="request_costs();">
+					</div>
+				</form>
+				
+				<p style="margin-top: 15px;">
+					Entspricht bei <span>{{ euro_per_m3 }}</span>&nbsp;€/m³:&nbsp;</span><span
+						id="euro" class="well well-sm">0 €</span>
+				</p>
+
+
+			</div>
+		</div>
+	</div>
+
+
+</div>
+
+<!-- Modal ablesen-->
+<div class="modal fade" id="ablesenModal" tabindex="-1" role="dialog"
+	aria-labelledby="myModalLabel">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"
+					aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title" id="myModalLabel">Wasserzähler ablesen</h4>
+			</div>
+			<div class="modal-body">
+
+				<form id="ablesenForm" method="post"
+					action="/water/save_zaehlerstand">
+
+					<div class="form-group">
+						<label for="intervalInput">Kubikmeter:</label> <input type="text"
+							class="form-control" name="qm" id="qm" value="">
+					</div>
+
+					<div class="form-group">
+						<label for="intervalInput">Anmerkung:</label> <input type="text"
+							class="form-control" name="note" id="note" value="">
+					</div>
+
+				</form>
+
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				<button type="button" class="btn btn-primary"
+					onclick="document.getElementById('ablesenForm').submit();">Speichern</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script type=text/javascript>
+  $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+     $( function() {
+    $( "#von_datepicker" ).datepicker({ dateFormat: 'dd.mm.yy' });
+  } );
+     
+  function request_costs() {
+	  $.ajax({
+	        type: 'POST',
+	        url: '/water/_get_costs',
+	        data: $("#costs").serialize(),
+	        success: function (data) {if (data != -1) {$('#euro').text(data.toFixed(2) + " €")}},
+	    });
+  }
+</script>
+
+{% endblock %}

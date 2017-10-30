@@ -1,0 +1,185 @@
+{% extends "layout.html" %} {% block body %}
+
+<script type=text/javascript
+	src="{{url_for('static', filename='js/jquery-ui.min.js') }}"></script>
+
+<script type=text/javascript
+	src="{{url_for('static', filename='js/date-de-DE.js') }}"></script>
+
+
+
+
+<link href="{{url_for('static', filename='css/jquery-ui.min.css') }}"
+	rel="stylesheet">
+
+
+<script type="text/javascript"
+	src="https://www.gstatic.com/charts/loader.js"></script>
+
+<!-- ab hier test -->
+
+{% set finished = False %}
+{% for row in sensor_rows %}
+
+
+<div class="row">
+
+    {% for sensor in row %}
+    
+    
+
+
+	    <div class="col-md-4 col-xl-2">
+	        {% if sensor != 0 %}
+		<div class="type_{{ sensors[sensor].type }}_border panel panel-default">
+			<div class="type_{{ sensors[sensor].type }}_bg panel-heading">
+				<h3 class="panel-title" style="color: white">
+					<span class="flaticon" style="color: white;"></span>{{ sensors[sensor].alias }}
+				</h3>
+			</div>
+			<table class="table">
+				<tr>
+					<td>
+						<p>Meter reading:</p> <span
+						style="font-family: Iceland; font-size: 30pt; margin: 0px 10px 0px 10px">
+							{{ sensor_data[sensor] }} m³</span>
+				</tr>
+
+				<tr>
+					<td>
+						<div id="{{ sensors[sensor].id }}_chart_div"
+							style="position: relative; width: 100%; left: 0; top: 0;"
+							height="300px"></div>
+
+					</td>
+				</tr>
+			</table>
+		</div>
+	
+	{% endif %}
+</div>
+
+
+
+	
+    {% endfor %}
+
+	    </div>
+    {% endfor %}
+
+
+
+
+
+
+
+
+
+
+<!-- bis hier test -->
+
+
+
+
+
+
+<!-- <div class="row">
+
+	<div class="col-md-4  col-xl-2">
+
+
+		<div class="panel panel-default" style="border-color: #ff6600;">
+			<div class="panel-heading" style="background-color: #ff6600">
+				<h3 class="panel-title" style="color: white">
+					<span class="flaticon-flame"></span>Gas
+				</h3>
+			</div>
+						<div class="panel-body"></div>
+
+			<table class="table">
+				<tr>
+					<td>
+						<p>Meter reading:</p> <span
+						style="font-family: Iceland; font-size: 30pt; margin: 0px 10px 0px 10px">
+							{{ gas_meter_reading }} m³</span>
+				</tr>
+
+				<tr>
+					<td>
+						<div id="gas_chart_div"
+							style="position: relative; width: 100%; left: 0; top: 0;"
+							height="300px"></div>
+
+					</td>
+				</tr>
+			</table>
+
+		</div>
+	</div>
+
+
+
+	<div class="col-md-4 col-xl-2">
+
+
+		<div class="panel panel-default" style="border-color: #ffcc00">
+			<div class="panel-heading"
+				style="background-image: url('static/images/flash.jpg');">
+				<h3 class="panel-title" style="color: white">
+					<span class="flaticon-lightning" style="color: white;"></span>Strom
+				</h3>
+			</div>
+			<div class="panel-body">Panel content</div>
+		</div>
+	</div>
+
+	<div class="col-md-4 col-xl-2">
+		<div class="panel panel-default" style="border-color: #0099ff">
+			<div class="panel-heading" style="background-color: #0099ff;">
+				<h3 class="panel-title" style="color: white">
+					<span class="flaticon-raindrop" style="color: white;"></span>Wasser
+				</h3>
+			</div>
+			<table class="table">
+				<tr>
+					<td>
+						<p>Meter reading:</p> <span
+						style="font-family: Iceland; font-size: 30pt; margin: 0px 10px 0px 10px">
+							{{ water_meter_reading }} m³</span>
+				</tr>
+
+				<tr>
+					<td>
+						<div id="water_chart_div"
+							style="position: relative; width: 100%; left: 0; top: 0;"
+							height="300px"></div>
+
+					</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+	
+	
+	
+	
+</div> -->
+
+<script type=text/javascript
+	src="{{url_for('static', filename='js/home_plot.js') }}"></script>
+
+
+{% endblock %} {% block footer %}
+
+<div class="panel panel-default" id="footer1">
+	<div class="panel-body">
+		<div style="text-align: center;">
+
+			<a href="/attribution">Attribution and open source software</a>
+
+		</div>
+	</div>
+
+
+
+	{% endblock %}

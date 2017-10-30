@@ -1,0 +1,131 @@
+    /*
+    Flaticon icon font: Flaticon
+    Creation date: 03/01/2017 13:59
+    */
+
+    @font-face {
+  font-family: "Flaticon";
+  src: url("./Flaticon.eot");
+  src: url("./Flaticon.eot?#iefix") format("embedded-opentype"),
+       url("./Flaticon.woff") format("woff"),
+       url("./Flaticon.ttf") format("truetype"),
+       url("./Flaticon.svg#Flaticon") format("svg");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+  @font-face {
+    font-family: "Flaticon";
+    src: url("./Flaticon.svg#Flaticon") format("svg");
+  }
+}
+
+    .fi:before{
+        display: inline-block;
+  font-family: "Flaticon";
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  line-height: 1;
+  text-decoration: inherit;
+  text-rendering: optimizeLegibility;
+  text-transform: none;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  font-smoothing: antialiased;
+    }
+
+    .flaticon-add:before { content: "\f100"; }
+.flaticon-add-user:before { content: "\f101"; }
+.flaticon-arrows:before { content: "\f102"; }
+.flaticon-arrows-1:before { content: "\f103"; }
+.flaticon-arrows-2:before { content: "\f104"; }
+.flaticon-backup:before { content: "\f105"; }
+.flaticon-calendar:before { content: "\f106"; }
+.flaticon-chat:before { content: "\f107"; }
+.flaticon-chat-1:before { content: "\f108"; }
+.flaticon-clock:before { content: "\f109"; }
+.flaticon-clock-1:before { content: "\f10a"; }
+.flaticon-clock-2:before { content: "\f10b"; }
+.flaticon-cloudy:before { content: "\f10c"; }
+.flaticon-coins:before { content: "\f10d"; }
+.flaticon-draw:before { content: "\f10e"; }
+.flaticon-edit:before { content: "\f10f"; }
+.flaticon-filter:before { content: "\f110"; }
+.flaticon-flame:before { content: "\f111"; }
+.flaticon-garbage:before { content: "\f112"; }
+.flaticon-group:before { content: "\f113"; }
+.flaticon-heart:before { content: "\f114"; }
+.flaticon-house:before { content: "\f115"; }
+.flaticon-import:before { content: "\f116"; }
+.flaticon-interface:before { content: "\f117"; }
+.flaticon-key:before { content: "\f118"; }
+.flaticon-lightning:before { content: "\f119"; }
+.flaticon-medal:before { content: "\f11a"; }
+.flaticon-money:before { content: "\f11b"; }
+.flaticon-multimedia:before { content: "\f11c"; }
+.flaticon-multimedia-1:before { content: "\f11d"; }
+.flaticon-open-book:before { content: "\f11e"; }
+.flaticon-profits:before { content: "\f11f"; }
+.flaticon-raindrop:before { content: "\f120"; }
+.flaticon-search:before { content: "\f121"; }
+.flaticon-settings:before { content: "\f122"; }
+.flaticon-speedometer:before { content: "\f123"; }
+.flaticon-star:before { content: "\f124"; }
+.flaticon-stats:before { content: "\f125"; }
+.flaticon-sun:before { content: "\f126"; }
+.flaticon-symbol:before { content: "\f127"; }
+.flaticon-tag:before { content: "\f128"; }
+.flaticon-technology:before { content: "\f129"; }
+.flaticon-time:before { content: "\f12a"; }
+.flaticon-tool:before { content: "\f12b"; }
+.flaticon-visibility:before { content: "\f12c"; }
+.flaticon-wrench:before { content: "\f12d"; }
+    
+    $font-Flaticon-add: "\f100";
+    $font-Flaticon-add-user: "\f101";
+    $font-Flaticon-arrows: "\f102";
+    $font-Flaticon-arrows-1: "\f103";
+    $font-Flaticon-arrows-2: "\f104";
+    $font-Flaticon-backup: "\f105";
+    $font-Flaticon-calendar: "\f106";
+    $font-Flaticon-chat: "\f107";
+    $font-Flaticon-chat-1: "\f108";
+    $font-Flaticon-clock: "\f109";
+    $font-Flaticon-clock-1: "\f10a";
+    $font-Flaticon-clock-2: "\f10b";
+    $font-Flaticon-cloudy: "\f10c";
+    $font-Flaticon-coins: "\f10d";
+    $font-Flaticon-draw: "\f10e";
+    $font-Flaticon-edit: "\f10f";
+    $font-Flaticon-filter: "\f110";
+    $font-Flaticon-flame: "\f111";
+    $font-Flaticon-garbage: "\f112";
+    $font-Flaticon-group: "\f113";
+    $font-Flaticon-heart: "\f114";
+    $font-Flaticon-house: "\f115";
+    $font-Flaticon-import: "\f116";
+    $font-Flaticon-interface: "\f117";
+    $font-Flaticon-key: "\f118";
+    $font-Flaticon-lightning: "\f119";
+    $font-Flaticon-medal: "\f11a";
+    $font-Flaticon-money: "\f11b";
+    $font-Flaticon-multimedia: "\f11c";
+    $font-Flaticon-multimedia-1: "\f11d";
+    $font-Flaticon-open-book: "\f11e";
+    $font-Flaticon-profits: "\f11f";
+    $font-Flaticon-raindrop: "\f120";
+    $font-Flaticon-search: "\f121";
+    $font-Flaticon-settings: "\f122";
+    $font-Flaticon-speedometer: "\f123";
+    $font-Flaticon-star: "\f124";
+    $font-Flaticon-stats: "\f125";
+    $font-Flaticon-sun: "\f126";
+    $font-Flaticon-symbol: "\f127";
+    $font-Flaticon-tag: "\f128";
+    $font-Flaticon-technology: "\f129";
+    $font-Flaticon-time: "\f12a";
+    $font-Flaticon-tool: "\f12b";
+    $font-Flaticon-visibility: "\f12c";
+    $font-Flaticon-wrench: "\f12d";

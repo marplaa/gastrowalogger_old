@@ -1,0 +1,29 @@
+
+
+
+
+<div class="row">
+	<div class="col-sm-3">
+
+		<div class="edit-header clearfix">
+			<button type="button" class="btn btn-success">Save</button>
+			<h4>Serialbus Settings</h4>
+		</div>
+
+		<form id="settingsForm">
+
+			<div class="form-group">
+				<label for="serialbusHost">SerialBus Host</label> <input type="text"
+					name="SERIALBUS_HOST" class="form-control" id="serialbusHost"
+					value="{{ settings_serialbus.serialbus_host }}">
+			</div>
+			<div class="form-group">
+				<label for="serialbusPort">SerialBus Port</label> <input
+					type="number" name="SERIALBUS_PORT" class="form-control"
+					id="serialbusPort" value="{{ settings_serialbus.serialbus_port }}">
+			</div>
+
+		</form>
+
+	</div>
+</div>

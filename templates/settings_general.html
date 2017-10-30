@@ -1,0 +1,40 @@
+<div class="row">
+	<div class="col-sm-3">
+
+		<div class="edit-header clearfix">
+			<button type="button" class="btn btn-success">Save</button>
+			<h4>Genaral Settings</h4>
+		</div>
+
+		<form id="settingsForm">
+
+			<div class="form-group">
+				<label for="timezone">Timezone</label> <select class="form-control"
+					id="timezone"> 
+					{% for tzone in settings_general.tzones %}
+					   {% if settings_general.timezone == tzone %}
+					      <option selected>{{tzone}} </option>
+					   {% else %}
+					      <option>{{tzone}}</option>
+					   {% endif %}
+					   
+					
+					{% endfor %}
+				</select>
+
+			</div>
+			
+			<div class="form-group">
+				<label for="database">Database</label> <input
+					type="text" name="database" class="form-control"
+					id="database" value="{{ settings_general.database }}">
+			</div>
+
+
+
+
+
+		</form>
+
+	</div>
+</div>

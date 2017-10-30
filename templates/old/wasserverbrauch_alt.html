@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<script type=text/javascript>
+  $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+     $( function() {
+    $( "#von_datepicker" ).datepicker({ dateFormat: 'dd.mm.yy' });
+  } );
+
+$( function() {
+    $( "#bis_datepicker" ).datepicker({ dateFormat: 'dd.mm.yy' });
+  } );
+
+</script>
+<script type=text/javascript src="{{url_for('static', filename='js/Chart.bundle.js') }}"></script>
+<script type=text/javascript src="{{url_for('static', filename='js/jquery-3.1.1.js') }}"></script>
+<script type=text/javascript
+	src="{{url_for('static', filename='js/jquery-ui.min.js') }}"></script>
+	
+<link href="{{url_for('static', filename='css/jquery-ui.min.css') }}"
+	rel="stylesheet">
+
+
+<h2>Wasserverbrauch</h2>
+
+<select name="Aufloesung" size="1"> 
+<option value="h">Stunden</option> 
+<option value="m">Minuten</option>
+</select>
+<span>Von: </span> <input type="text" id="von_datepicker"> <span>Bis: </span> <input type="text" id="bis_datepicker">
+<button id="button1">Start</button>
+
+
+  <canvas id="myChart" width="900" height="500"></canvas>
+
+
+
+{% endblock %}

@@ -1,0 +1,12 @@
+[Unit]
+Description=Gastrowalogger GUI (FLASK APP)
+
+[Service]
+Type=simple
+RestartSec=10
+Restart=on-failure
+WorkingDirectory={{working_dir}}
+ExecStart={{exec}}
+
+[Install]
+WantedBy=multi-user.target

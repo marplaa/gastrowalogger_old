@@ -1,0 +1,263 @@
+{% extends "layout.html" %} {% block body %}
+
+<script type=text/javascript>
+  $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+</script>
+<script type=text/javascript
+	src="{{url_for('static', filename='js/Chart.bundle.min.js') }}"></script>
+
+
+<script type=text/javascript
+	src="{{url_for('static', filename='js/jquery-ui.min.js') }}"></script>
+
+
+<div class="page-header">
+	<h3>
+		<span class="flaticon-flame" style="color: #ff6600;"></span> Calibrate
+		gas sensor <small>Subtext for header</small>
+	</h3>
+</div>
+
+
+
+<div class="row">
+	<div class="col-sm-3">
+
+
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">Sensor Info</h3>
+			</div>
+			<div class="panel-body">
+				<table width="100%">
+					<tr>
+						<td><b>ID</b></td>
+						<td>{{ sensor.id }}</td>
+					</tr>
+					<tr>
+						<td><b>Version</b></td>
+						<td>{{ sensor.version }}</td>
+					</tr>
+					<tr>
+						<td><b>Name</b></td>
+						<td>{{ sensor.label }}</td>
+					</tr>
+					<tr>
+						<td><b>Beschreibung</b></td>
+						<td>{{ sensor.description }}</td>
+					</tr>
+
+				</table>
+			</div>
+
+		</div>
+
+
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">Auto calibration</h3>
+			</div>
+			<div class="panel-body">
+				<div class="form-group">
+					<label for="hysteresisInputAuto">Hysteresis</label> <input
+						type="number" class="form-control" id="hysteresisInputAuto"
+						value="{{ settings.hysteresis }}">
+
+				</div>
+			</div>
+			<div class="panel-footer">
+				<button id="calibrate" class="btn btn-primary pull-right">Calibrate</button>
+				<div class="clearfix"></div>
+			</div>
+		</div>
+
+		<div class="panel-group">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h4 class="panel-title">
+						<a data-toggle="collapse" href="#collapse1"> <span
+							class="glyphicon glyphicon-menu-down" aria-hidden="true"></span>
+							Manual settings
+						</a>
+					</h4>
+				</div>
+				<div id="collapse1" class="panel-collapse collapse">
+					<div class="panel-body">
+						<form id="settingsForm">
+							<div class="form-group">
+								<label for="lowThresInput">low threshold</label> <input
+									type="number" name="lowThres" class="form-control"
+									id="lowThresInput" value="{{ settings.lowThres }}">
+							</div>
+							<div class="form-group">
+								<label for="highThresInput">high threshold</label> <input
+									type="number" name="highThres" class="form-control"
+									id="highThresInput" value="{{ settings.highThres }}">
+
+							</div>
+							<div class="form-group">
+								<label for="hysteresisInput">hysteresis</label> <input
+									type="number" name="hysteresis" class="form-control"
+									id="hysteresisInput" value="{{ settings.hysteresis }}">
+
+							</div>
+							<div class="form-group">
+								<label for="minImpulseLengthInput">min impulse length</label> <input
+									type="number" name="min_impulse_length" class="form-control"
+									id="minImpulseLengthInput"
+									value="{{ settings.min_impulse_length }}">
+
+							</div>
+							<div class="form-group">
+								<label for="minIdleLengthInput">min idle length</label> <input
+									type="number" name="min_idle_length" class="form-control"
+									id="minIdleLengthInput" value="{{ settings.min_idle_length }}">
+
+							</div>
+							<div class="form-group">
+								<label for="intervalInput">interval</label> <input type="number"
+									class="form-control" name="interval" id="intervalInput"
+									value="{{ settings.interval }}">
+
+							</div>
+							<div class="form-group">
+								<label for="maxFailsInput">max fails</label> <input
+									type="number" name="max_fails" class="form-control"
+									id="maxFailsInput" value="{{ settings.max_fails }}">
+
+							</div>
+							<div class="checkbox">
+								<label> <input type="checkbox" name="invert" id="invert">
+									invert
+								</label>
+							</div>
+							<div>
+								<div class="form-group">
+									<label for="maxFailsInput">invert </label>
+									<div class="btn-group">
+										<button type="button" class="btn btn-primary">Yes</button>
+										<button type="button" class="btn btn-primary">No</button>
+									</div>
+								</div>
+							</div>
+						</form>
+					</div>
+
+					<div class="panel-footer">
+						<!-- Button trigger modal -->
+						<button type="button" class="btn btn-default" data-toggle="modal"
+							data-target="#loadDefaultsModal">Load defaults</button>
+
+						<button id="saveSettings" class="btn btn-primary pull-right"
+							onclick="sendSettings();">Save</button>
+						<div class="clearfix"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+
+
+
+
+
+
+
+	</div>
+
+	<div class="col-sm-9">
+		<div class="well well-sm">
+			Plot:
+			<button id="button1" class="btn btn-success btn-xs"
+				style="margin-right: 20px;">Start</button>
+			<div style="display: inline-block;">
+				<div
+					style="margin-right: 5px; border-radius: 2px; display: inline-block; background-color: #A11; width: 10px; height: 10px; position: relative">
+				</div>
+				high threshold:
+				<div id="highThresLegend"
+					style="display: inline-block; width: 50px;">{{
+					settings.highThres }}</div>
+
+			</div>
+			<div style="display: inline-block;">
+				<div
+					style="margin-right: 5px; border-radius: 2px; display: inline-block; background-color: #1A1; width: 10px; height: 10px; position: relative">
+				</div>
+				low threshold:
+				<div id="lowThresLegend" style="display: inline-block; width: 50px;">{{
+					settings.lowThres }}</div>
+
+			</div>
+			<div style="display: inline-block;">
+				<div
+					style="margin-right: 5px; border-radius: 2px; display: inline-block; background-color: #444; width: 10px; height: 10px; position: relative">
+				</div>
+				value:
+				<div id="valueLegend" style="display: inline-block; width: 50px;">0</div>
+
+			</div>
+
+
+			<div class="pull-right">
+				<span> Impulses <span class="badge" id="impulsesBadge">{{
+						settings.count }}</span>
+				</span>
+			</div>
+			<div class="clearfix"></div>
+		</div>
+		<canvas id="myChart"></canvas>
+	</div>
+</div>
+
+
+<!-- Modal load defaults-->
+<div class="modal fade" id="loadDefaultsModal" tabindex="-1"
+	role="dialog" aria-labelledby="myModalLabel">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"
+					aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title" id="myModalLabel">Load default values?</h4>
+			</div>
+			<div class="modal-body">
+
+				<div class="checkbox">
+					<label> <input type="checkbox" name="loadDefault"
+						id="loadDefault"> load default
+					</label>
+				</div>
+
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				<button type="button" class="btn btn-primary"
+					onclick="if ($('#loadDefault').prop('checked')) {loadDefaults(); $('#loadDefault').prop('checked', false);}  $('#loadDefaultsModal').modal('hide');">Load
+					defaults</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
+
+
+
+
+
+
+<script type=text/javascript
+	src="{{url_for('static', filename='js/gas_sensor.js') }}">
+</script>
+
+<script type="text/javascript">
+//_init({{ highThres }}, {{ lowThres }}, {{ hysteresis }}, {{ invert }});
+_init({{ settings|tojson }});
+</script>
+
+
+{% endblock %}

@@ -1,0 +1,194 @@
+{% extends "layout.html" %} {% block body %}
+
+
+
+<script type=text/javascript
+	src="{{url_for('static', filename='js/jquery-ui.min.js') }}"></script>
+
+<script type=text/javascript
+	src="{{url_for('static', filename='js/date-de-DE.js') }}"></script>
+
+
+
+
+<link href="{{url_for('static', filename='css/jquery-ui.min.css') }}"
+	rel="stylesheet">
+<link href="{{url_for('static', filename='css/loading_blue.css') }}"
+	rel="stylesheet">
+
+
+
+<script type="text/javascript"
+	src="https://www.gstatic.com/charts/loader.js"></script>
+
+<script>
+	$(function() {
+		$('[data-toggle="tooltip"]').tooltip()
+	})
+</script>
+
+
+<script>
+
+function _schnellauswahl() {
+	var today = Date.today();
+	$("#bis_datepicker").val(today.toString('dd.MM.yyyy'));
+
+	
+	days = $('#schnellauswahl').val();
+	days = days * -1;
+	var from_date = Date.today().add(days).days();
+	$("#von_datepicker").val(from_date.toString('dd.MM.yyyy'));
+	
+	$("#von_uhr").val("00:00");
+	$("#bis_uhr").val("00:00");
+	
+	if (days == 0) {
+		$("#resolution").val("1800");
+	} else {
+		$("#resolution").val("86400");
+	}
+	
+	requestNewData();
+}
+</script>
+
+
+
+<div class="row">
+
+	<div class="col-sm-12">
+		<div class="well well-sm">
+
+			<form id="settings" class="form-inline"
+				action="/water/_get_verbrauch_file" method="post">
+
+				<div class="form-group" style="margin-right: 20px;">
+					<label>Schnellauswahl: </label> <select class="form-control"
+						id="schnellauswahl" size="1" onchange="_schnellauswahl();">
+						<option value="0">Heute</option>
+						<option value="7" selected>Letzte 7 Tage</option>
+						<option value="30">Letzte 30 Tage</option>
+						<option value="90">Letzte 3 Monate</option>
+						<option value="180">Letzte 6 Monate</option>
+					</select>
+				</div>
+
+				<div class="form-group">
+					<label>Auflösung: </label> <select class="form-control"
+						id="resolution" name="aufloesung" size="1"
+						style="margin-right: 20px;">
+						<option value="60">1 Minute</option>
+						<option value="300">5 Minuten</option>
+						<option value="1800">30 Minuten</option>
+						<option value="3600">stündlich</option>
+						<option value="86400" selected>täglich</option>
+					</select>
+				</div>
+				<div class="form-group" data-toggle="tooltip"
+					title="Datum im Format dd.mm.YYYY" data-placement="bottom">
+					<label>Von:</label> <span class="flaticon-calendar"
+						style="color: #000;"></span> <input type="text"
+						class="form-control" name="von_date" id="von_datepicker" size="8">
+				</div>
+
+				<div class="form-group" style="margin-right: 20px;"
+					data-toggle="tooltip" title="Uhrzeit im Format hh:mm"
+					data-placement="bottom">
+					<span class="flaticon-clock" style="color: #000;"></span> <input
+						type="text" class="form-control" size="2" name="von_uhr"
+						value="00:00">
+				</div>
+				<div class="form-group" data-toggle="tooltip"
+					title="Datum im Format dd.mm.YYYY" data-placement="bottom">
+					<label>Bis:</label> <span class="flaticon-calendar"
+						style="color: #000;"></span> <input type="text"
+						class="form-control" name="bis_date" id="bis_datepicker" size="8">
+				</div>
+
+				<div class="form-group" style="margin-right: 20px;"
+					data-toggle="tooltip" title="Uhrzeit im Format hh:mm"
+					data-placement="bottom">
+					<span class="flaticon-clock" style="color: #000;"></span> <input
+						type="text" class="form-control" size="2" name="bis_uhr"
+						value="23:59">
+
+				</div>
+
+				<button type="button" class="btn btn-primary"
+					onclick="requestNewData();">Los</button>
+
+				<button type="submit" class="btn btn-primary pull-right">Download
+					als CSV</button>
+
+			</form>
+
+
+
+
+
+		</div>
+
+
+	</div>
+</div>
+
+
+
+<div class="row">
+
+	<div class="col-sm-12">
+
+
+		<div id="chart_div"
+			style="position: absolute; width: 100%; left: 0; top: 0;"
+			height="700px"></div>
+
+
+
+		<!-- 		<div style="position: absolute; left: 0; top: 0; width: 100%; height: 500px; overflow: hidden; display: none;" id="loading_icon;"> -->
+
+		<div class="load" id="loading_icon"
+			style="position: absolute; left: 0; top: 0; width: 100%; height: 500px; overflow: hidden; display: none;">
+			<div class="dot" style="position: absolute;"></div>
+			<div class="outline" style="position: absolute;">
+				<span></span>
+			</div>
+		</div>
+	</div>
+
+
+
+
+
+</div>
+</div>
+
+<script type=text/javascript>
+  $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+     $( function() {
+    $( "#von_datepicker" ).datepicker({ dateFormat: 'dd.mm.yy' });
+  } );
+
+$( function() {
+    $( "#bis_datepicker" ).datepicker({ dateFormat: 'dd.mm.yy' });
+  } );
+
+
+
+
+
+var today = Date.today();
+var week_ago = Date.today().add(-7).days();
+$("#von_datepicker").val(week_ago.toString('dd.MM.yyyy'));
+$("#bis_datepicker").val(today.toString('dd.MM.yyyy'));
+
+</script>
+
+<script type=text/javascript
+	src="{{url_for('static', filename='js/water_plot.js') }}"></script>
+
+
+
+
+{% endblock %}

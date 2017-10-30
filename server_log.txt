@@ -1,0 +1,160 @@
+[2017-10-30 14:15:20 +0100] [11094] [INFO] Handling signal: term
+[2017-10-30 14:15:21 +0100] [11097] [INFO] Worker exiting (pid: 11097)
+[2017-10-30 14:15:21 +0100] [11094] [INFO] Shutting down: Master
+[2017-10-30 14:15:25 +0100] [11771] [INFO] Starting gunicorn 19.7.1
+[2017-10-30 14:15:25 +0100] [11771] [INFO] Listening at: http://0.0.0.0:5000 (11771)
+[2017-10-30 14:15:25 +0100] [11771] [INFO] Using worker: eventlet
+[2017-10-30 14:15:25 +0100] [11774] [INFO] Booting worker with pid: 11774
+[2017-10-30 14:29:30 +0100] [11771] [INFO] Handling signal: term
+[2017-10-30 14:29:31 +0100] [11774] [INFO] Worker exiting (pid: 11774)
+[2017-10-30 14:29:31 +0100] [11771] [INFO] Shutting down: Master
+[2017-10-30 14:29:35 +0100] [12043] [INFO] Starting gunicorn 19.7.1
+[2017-10-30 14:29:35 +0100] [12043] [INFO] Listening at: http://0.0.0.0:5000 (12043)
+[2017-10-30 14:29:35 +0100] [12043] [INFO] Using worker: eventlet
+[2017-10-30 14:29:35 +0100] [12046] [INFO] Booting worker with pid: 12046
+[2017-10-30 14:31:14 +0100] [12043] [INFO] Handling signal: term
+[2017-10-30 14:31:15 +0100] [12046] [INFO] Worker exiting (pid: 12046)
+[2017-10-30 14:31:16 +0100] [12043] [INFO] Shutting down: Master
+[2017-10-30 14:31:20 +0100] [12079] [INFO] Starting gunicorn 19.7.1
+[2017-10-30 14:31:20 +0100] [12079] [INFO] Listening at: http://0.0.0.0:5000 (12079)
+[2017-10-30 14:31:20 +0100] [12079] [INFO] Using worker: eventlet
+[2017-10-30 14:31:20 +0100] [12082] [INFO] Booting worker with pid: 12082
+[2017-10-30 14:32:46 +0100] [12079] [INFO] Handling signal: term
+[2017-10-30 14:32:46 +0100] [12082] [INFO] Worker exiting (pid: 12082)
+[2017-10-30 14:32:47 +0100] [12079] [INFO] Shutting down: Master
+[2017-10-30 14:32:51 +0100] [12113] [INFO] Starting gunicorn 19.7.1
+[2017-10-30 14:32:51 +0100] [12113] [INFO] Listening at: http://0.0.0.0:5000 (12113)
+[2017-10-30 14:32:51 +0100] [12113] [INFO] Using worker: eventlet
+[2017-10-30 14:32:51 +0100] [12117] [INFO] Booting worker with pid: 12117
+[2017-10-30 14:32:51 +0100] [12117] [ERROR] invalid syntax (gastrowalogger.py, line 940)
+Traceback (most recent call last):
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/gunicorn/workers/base.py", line 135, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/gunicorn/app/base.py", line 67, in wsgi
+    self.callable = self.load()
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/gunicorn/app/wsgiapp.py", line 65, in load
+    return self.load_wsgiapp()
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/gunicorn/app/wsgiapp.py", line 52, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/gunicorn/util.py", line 352, in import_app
+    __import__(module)
+  File "/home/pi/gastrowalogger_env/wsgi.py", line 1, in <module>
+    from gastrowalogger import app as application
+  File "/home/pi/gastrowalogger_env/gastrowalogger.py", line 940
+    datum_zeit_bis = tz.fromutc(datetime.utcfromtimestamp((zeitpunkt_bis - 1)))
+                 ^
+SyntaxError: invalid syntax
+[2017-10-30 14:32:51 +0100] [12117] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/gunicorn/workers/base.py", line 135, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/gunicorn/app/base.py", line 67, in wsgi
+    self.callable = self.load()
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/gunicorn/app/wsgiapp.py", line 65, in load
+    return self.load_wsgiapp()
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/gunicorn/app/wsgiapp.py", line 52, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/gunicorn/util.py", line 352, in import_app
+    __import__(module)
+  File "/home/pi/gastrowalogger_env/wsgi.py", line 1, in <module>
+    from gastrowalogger import app as application
+  File "/home/pi/gastrowalogger_env/gastrowalogger.py", line 940
+    datum_zeit_bis = tz.fromutc(datetime.utcfromtimestamp((zeitpunkt_bis - 1)))
+                 ^
+SyntaxError: invalid syntax
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/gunicorn/arbiter.py", line 578, in spawn_worker
+    worker.init_process()
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/gunicorn/workers/geventlet.py", line 103, in init_process
+    super(EventletWorker, self).init_process()
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/gunicorn/workers/base.py", line 126, in init_process
+    self.load_wsgi()
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/gunicorn/workers/base.py", line 148, in load_wsgi
+    self.reloader.add_extra_file(exc_val.filename)
+AttributeError: 'NoneType' object has no attribute 'add_extra_file'
+[2017-10-30 14:32:51 +0100] [12117] [INFO] Worker exiting (pid: 12117)
+[2017-10-30 14:32:51 +0100] [12113] [INFO] Shutting down: Master
+[2017-10-30 14:32:51 +0100] [12113] [INFO] Reason: Worker failed to boot.
+[2017-10-30 14:33:17 +0100] [12164] [INFO] Starting gunicorn 19.7.1
+[2017-10-30 14:33:17 +0100] [12164] [INFO] Listening at: http://0.0.0.0:5000 (12164)
+[2017-10-30 14:33:17 +0100] [12164] [INFO] Using worker: eventlet
+[2017-10-30 14:33:17 +0100] [12167] [INFO] Booting worker with pid: 12167
+[2017-10-30 14:33:22,450] ERROR in app: Exception on /charts/_get_chart [POST]
+Traceback (most recent call last):
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/flask/app.py", line 1982, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/flask/app.py", line 1614, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/flask/app.py", line 1517, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/flask/_compat.py", line 33, in reraise
+    raise value
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/flask/app.py", line 1612, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/flask/app.py", line 1598, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "/home/pi/gastrowalogger_env/gastrowalogger.py", line 939, in calculate_chart
+    datum_zeit_von = tz.fromutc(tz.normalize(datetime.utcfromtimestamp((zeitpunkt_bis-resolution))))
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/pytz/tzinfo.py", line 235, in normalize
+    raise ValueError('Naive time - no tzinfo set')
+ValueError: Naive time - no tzinfo set
+[2017-10-30 14:33:22,707] ERROR in app: Exception on /charts/_get_chart [POST]
+Traceback (most recent call last):
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/flask/app.py", line 1982, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/flask/app.py", line 1614, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/flask/app.py", line 1517, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/flask/_compat.py", line 33, in reraise
+    raise value
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/flask/app.py", line 1612, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/flask/app.py", line 1598, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "/home/pi/gastrowalogger_env/gastrowalogger.py", line 939, in calculate_chart
+    datum_zeit_von = tz.fromutc(tz.normalize(datetime.utcfromtimestamp((zeitpunkt_bis-resolution))))
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/pytz/tzinfo.py", line 235, in normalize
+    raise ValueError('Naive time - no tzinfo set')
+ValueError: Naive time - no tzinfo set
+[2017-10-30 14:33:25,210] ERROR in app: Exception on /charts/_get_chart [POST]
+Traceback (most recent call last):
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/flask/app.py", line 1982, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/flask/app.py", line 1614, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/flask/app.py", line 1517, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/flask/_compat.py", line 33, in reraise
+    raise value
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/flask/app.py", line 1612, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/flask/app.py", line 1598, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "/home/pi/gastrowalogger_env/gastrowalogger.py", line 939, in calculate_chart
+    datum_zeit_von = tz.fromutc(tz.normalize(datetime.utcfromtimestamp((zeitpunkt_bis-resolution))))
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/pytz/tzinfo.py", line 235, in normalize
+    raise ValueError('Naive time - no tzinfo set')
+ValueError: Naive time - no tzinfo set
+[2017-10-30 14:33:25,435] ERROR in app: Exception on /charts/_get_chart [POST]
+Traceback (most recent call last):
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/flask/app.py", line 1982, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/flask/app.py", line 1614, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/flask/app.py", line 1517, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/flask/_compat.py", line 33, in reraise
+    raise value
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/flask/app.py", line 1612, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/flask/app.py", line 1598, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "/home/pi/gastrowalogger_env/gastrowalogger.py", line 939, in calculate_chart
+    datum_zeit_von = tz.fromutc(tz.normalize(datetime.utcfromtimestamp((zeitpunkt_bis-resolution))))
+  File "/home/pi/gastrowalogger_env/lib/python3.4/site-packages/pytz/tzinfo.py", line 235, in normalize
+    raise ValueError('Naive time - no tzinfo set')
+ValueError: Naive time - no tzinfo set
