@@ -3,3 +3,5 @@ SerialBus.py
 SerialBusDevice.py
 sensor_device.py
 setup.py
+helpers/tcp_serial_redirect.py
+helpers/tcp_serial_redirect.service
