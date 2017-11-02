@@ -1,0 +1,11 @@
+[Unit]
+Description=tcp serial bridge
+
+[Service]
+Type=simple
+RestartSec=10
+Restart=on-failure
+ExecStart=/usr/local/sbin/tcp_serial_redirect.py --vidpid 6790 29987 --serialnum ABCD 19200 -P 6964
+
+[Install]
+WantedBy=multi-user.target
