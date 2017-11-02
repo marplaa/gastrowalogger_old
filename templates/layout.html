@@ -41,7 +41,12 @@
 <script
 	src="{{url_for('static', filename='js/constants.js') }}"></script>
 <script type="text/javascript">
-	sensors = {{sensors|tojson}};
+	var sensors = {{sensors|tojson}};
+	
+	{% if sensor is defined %}
+	    var sensor = "{{ sensor }}";
+    {% endif %}
+	
 </script>
 <!-- 
 <script
@@ -105,7 +110,7 @@
 						class="flaticon-raindrop" style="color: #0099ff;"></span> Wasser<span
 						class="caret"></span></a>
 					<ul class="dropdown-menu">
-						<li><a href="/water/wasserverbrauch"><span
+						<li><a href="/sensor/current?type=water"><span
 								class="flaticon-speedometer"></span> Aktueller Verbrauch</a></li>
 						<li><a href="/charts?type=water"><span
 								class="flaticon-stats"></span> Diagramme</a></li>

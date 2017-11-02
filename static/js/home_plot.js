@@ -19,7 +19,7 @@ var options = {
 		chart : {
 			title : 'Wasserverbrauch der letzten 7 Tage'
 		},
-		colors : [ '#0099ff', '#0099ff' ]
+		colors : [ icon_mapping["water"]["color"], icon_mapping["water"]["color"] ]
 	},
 	gas: {
 		height : 300,
@@ -29,7 +29,17 @@ var options = {
 		chart : {
 			title : 'Gasverbrauch der letzten 7 Tage'
 		},
-		colors : [ '#ff6600', '#ffab91' ]
+		colors : [ icon_mapping["gas"]["color"], icon_mapping["gas"]["color"] ]
+	},
+	power: {
+		height : 300,
+		legend : {
+			position : 'none'
+		},
+		chart : {
+			title : 'Stromverbrauch der letzten 7 Tage'
+		},
+		colors : [ icon_mapping["power"]["color"], icon_mapping["power"]["color"] ]
 	}
 };
 
@@ -49,7 +59,7 @@ function getData() {
 		});
 
 	var today = Date.today();
-	var week_ago = Date.today().add(-7).days();
+	var week_ago = Date.today().add(-6).days();
 	var from_date = week_ago.toString('dd.MM.yyyy');
 	var to_date = today.toString('dd.MM.yyyy');
 	
@@ -61,7 +71,7 @@ function getData() {
 				from_date : from_date,
 				from_time : "00:00",
 				to_date : to_date,
-				to_time : "00:00",
+				to_time : "23:59",
 				resolution : "86400"
 			},
 			success : drawChart,
