@@ -38,7 +38,7 @@ function set_price(_price) {
 
 
 function getLiveData() {
-	$.getJSON($SCRIPT_ROOT + '/water/_get_live_data', new_data);
+	$.getJSON($SCRIPT_ROOT + '/sensor/_get_live_data?sensor=' + sensor, new_data);
 }
 
 // Cookie handling...
@@ -46,7 +46,7 @@ function setCookie(cname, cvalue, exdays) {
     var d = new Date();
     d.setTime(d.getTime() + (exdays*24*60*60*1000));
     var expires = "expires="+ d.toUTCString();
-    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/water/wasserverbrauch";
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/sensor/current";
 } 
 
 function getCookie(cname) {
@@ -70,7 +70,7 @@ function init_charts() {
 	
 	// ######### l_per_min ##############
     if (getCookie("start_count_l_per_min") == "") {
-    	$.getJSON($SCRIPT_ROOT + '/water/_get_live_data', 
+    	$.getJSON($SCRIPT_ROOT + '/sensor/_get_live_data?sensor='+sensor, 
     		function (data) {
     			start_count_l_per_min = data;
     			setCookie("start_count_l_per_min", start_count_l_per_min, 1);
@@ -78,7 +78,7 @@ function init_charts() {
     	);
     	
     } else {
-    	$.getJSON($SCRIPT_ROOT + '/water/_get_live_data', 
+    	$.getJSON($SCRIPT_ROOT + '/sensor/_get_live_data?sensor=' + sensor, 
         		function (data) {
         			if (data >= parseInt(getCookie("start_count_l_per_min"))) {
         				start_count_l_per_min = parseInt(getCookie("start_count_l_per_min"));
@@ -103,7 +103,7 @@ function init_charts() {
     
  // ######### liters ##############
     if (getCookie("start_count_l") == "") {
-    	$.getJSON($SCRIPT_ROOT + '/water/_get_live_data', 
+    	$.getJSON($SCRIPT_ROOT + '/sensor/_get_live_data?sensor=' + sensor, 
     		function (data) {
     			start_count_l = data;
     			setCookie("start_count_l", start_count_l, 1);
@@ -111,7 +111,7 @@ function init_charts() {
     	);
     	
     } else {
-    	$.getJSON($SCRIPT_ROOT + '/water/_get_live_data', 
+    	$.getJSON($SCRIPT_ROOT + '/sensor/_get_live_data?sensor=' + sensor, 
         		function (data) {
         			if (data >= parseInt(getCookie("start_count_l"))) {
         				start_count_l = parseInt(getCookie("start_count_l"));
@@ -150,7 +150,7 @@ function init_charts() {
 }
 
 function reset_l_per_min () {
-	$.getJSON($SCRIPT_ROOT + '/water/_get_live_data', 
+	$.getJSON($SCRIPT_ROOT + '/sensor/_get_live_data?sensor=' + sensor, 
     		function (data) {
     			start_count_l_per_min = data;
     			setCookie("start_count_l_per_min", start_count_l_per_min, 1);
@@ -165,7 +165,7 @@ function reset_l_per_min () {
 }
 
 function reset_l() {
-	$.getJSON($SCRIPT_ROOT + '/water/_get_live_data', 
+	$.getJSON($SCRIPT_ROOT + '/sensor/_get_live_data?sensor=' + sensor, 
     		function (data) {
     			start_count_l = data;
     			setCookie("start_count_l", start_count_l, 1);
