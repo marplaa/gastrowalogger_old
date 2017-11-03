@@ -3,6 +3,5 @@ bin
 include
 lib
 Gastrowalogger-0.9
-server_log.txt
-log.txt
+logs
 gastrowalogger.db

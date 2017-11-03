@@ -5,8 +5,8 @@ Description=Gastrowalogger Service
 Type=simple
 RestartSec=10
 Restart=on-failure
-WorkingDirectory=/home/pi/gastrowalogger_env
-ExecStart=/home/pi/gastrowalogger_env/bin/python gastrowalogger_service.py
+WorkingDirectory={{'working_dir}}
+ExecStart={{exec}}
 
 [Install]
 WantedBy=multi-user.target
