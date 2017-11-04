@@ -17,6 +17,7 @@ import pytz
 import logging
 import sys
 import math
+from flask.ext.babel import Babel, gettext, ngettext
 
 
 
@@ -52,6 +53,7 @@ config.read(sys.path[0] + '/config.ini')
 app.secret_key = config.get("GASTROWALOGGER", "SECRET_KEY")
 
 tz = timezone(config.get("TIME", "TIMEZONE"))
+babel = Babel(app)
 
 logfile = config.get("GASTROWALOGGER", "LOG_FILE")
 if not logfile.startswith("/"):
@@ -69,6 +71,11 @@ types = {"water" : "1A",
          }
 
 
+
+
+@babel.localeselector
+def get_locale():
+    return config.get("GASTROWALOGGER", "LANGUAGE")
 
 def get_sensors():
     db = get_db()
@@ -125,7 +132,7 @@ def sensor_settings():
     except:
         flash("Error while retrieving data from device: ")
         raise
-        return render_template('wassersensor.html')
+        return render_template('sensor_settings.html')
 
     
 def get_settings(sensor):
@@ -316,10 +323,10 @@ def save_meter_reading():
             cur = db.execute("INSERT INTO readings (sensor, timestamp, reading, note) VALUES (?, strftime('%s', 'now'), ?, ?)", (sensors[sensor]["id"], new_reading, note))
             db.commit()
             db.close()
-            flash('Neuen Zählerstand hinzugefügt!', 'success')
+            flash(gettext('New reading was successfully added!'), 'success')
             logging.info("added new meter reading for Sensor " + sensors[sensor]["alias"] + "; reading: " + new_reading)
         except:
-            flash('Fehler beim einfügen', 'danger')
+            flash(gettext('Error while adding reading'), 'danger')
             logging.error("failed to add new meter reading for Sensor " + sensors[sensor]["alias"] + "; reading: " + new_reading)
             pass
         
@@ -436,7 +443,7 @@ def get_csv():#+from_time, to_time):
     zeitpunkt_bis = from_time + resolution #- (from_time % resolution)) #  +  resolution
      
     csv = ""
-    filename = "Wasserverbrauch_" + request.form["from_date"] + "-" +  request.form["to_date"]
+    filename = gettext("water") + "_consumption" + request.form["from_date"] + "-" +  request.form["to_date"]
      
     # ab hier in lokaler zeit rechnen weil bei abrundung des tages sonst probleme auftreten. die timestamp ist also quasi utc+00
 
