@@ -3,5 +3,5 @@ bin
 include
 lib
 Gastrowalogger-0.9
-logs
+logs/*
 gastrowalogger.db
