@@ -70,9 +70,6 @@ types = {"water" : "1A",
          "power" : "1C"
          }
 
-
-
-
 @babel.localeselector
 def get_locale():
     return config.get("GASTROWALOGGER", "LANGUAGE")

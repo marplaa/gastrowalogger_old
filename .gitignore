@@ -5,3 +5,6 @@ lib
 Gastrowalogger-0.9
 logs/*
 gastrowalogger.db
+.project
+.pydevproject
+/pip-selfcheck.json
