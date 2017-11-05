@@ -7,4 +7,6 @@ logs/*
 gastrowalogger.db
 .project
 .pydevproject
+.settings
 /pip-selfcheck.json
+

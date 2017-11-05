@@ -17,7 +17,7 @@ import pytz
 import logging
 import sys
 import math
-from flask.ext.babel import Babel, gettext, ngettext
+from flask.ext.babel import Babel, gettext, ngettext, format_datetime, Locale
 
 
 
@@ -70,9 +70,10 @@ types = {"water" : "1A",
          "power" : "1C"
          }
 
+
 @babel.localeselector
 def get_locale():
-    return config.get("GASTROWALOGGER", "LANGUAGE")
+    return config.get("GASTROWALOGGER", "LOCALE")
 
 def get_sensors():
     db = get_db()
@@ -539,8 +540,10 @@ def calculate_chart():#+from_time, to_time):
     resolution = int(request.form["resolution"])
     
 
-    from_datetime = datetime.strptime(request.form["from_date"] + ' ' + request.form["from_time"], '%d.%m.%Y %H:%M')
-    from_date_time_tz = tz.normalize(tz.localize(from_datetime))
+    from_date = Babel.parse_date(request.form["from_date"], locale=config.get("GASTROWALOGGER", "LOCALE"))
+    from_time = Babel.parse_time(request.form["from_time"], locale=config.get("GASTROWALOGGER", "LOCALE"))
+    from_date_time = datetime.combine(from_date, from_time)
+    from_date_time_tz = tz.normalize(tz.localize(from_date_time))
     from_date_time_utc = from_date_time_tz.astimezone(pytz.timezone('UTC'))    
     
     to_datetime = datetime.strptime(request.form["to_date"] + ' ' + request.form["to_time"], '%d.%m.%Y %H:%M')
@@ -632,7 +635,6 @@ def get_data(sensor, from_date, to_date, resolution):
     
     data = {}
     
-
     data['sensor'] = sensors[sensor]
     data['from_date'] = from_date
     data['to_date'] = to_date
@@ -857,12 +859,14 @@ def home_page():
 
 @app.route('/settings')
 def settings():
-#
-    settings_general = {"tzones" : pytz.all_timezones, 
+
+    settings_general = {"tzones" : pytz.all_timezones,
+                        "date_format" : Locale(config.get("GASTROWALOGGER", "LOCALE")).date_formats['short'],
+                        "time_format" : Locale(config.get("GASTROWALOGGER", "LOCALE")).time_formats['short'],
                         "timezone" : config.get("TIME", "TIMEZONE"),
                         "database" : config.get("DATABASE", "DATABASE")}
     
-    return render_template('settings.html', settings_serialbus = get_serialbus_settings(), settings_general = settings_general )
+    return render_template('settings.html', settings_serialbus = get_serialbus_settings(), settings_general = settings_general, locales = Locale("de_DE").time_formats['short'])
 
 @app.route('/attribution')
 def attribution():
