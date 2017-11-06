@@ -600,8 +600,8 @@ def calculate_chart():#+from_time, to_time):
             
             #### mit timedelta oderso, sonst gehts nicht mit daylightsaving -.-
             sumcount = 0
-            datum_zeit_von = (zeitpunkt_bis - timedelta(seconds = resolution))
-            datum_zeit_bis = (zeitpunkt_bis - timedelta(seconds = 1))
+            datum_zeit_von = zeitpunkt_bis - timedelta(seconds = resolution)
+            datum_zeit_bis = zeitpunkt_bis - timedelta(seconds = 1)
             uhrzeit_von = datum_zeit_von.strftime('%H:%M')
             uhrzeit_bis = datum_zeit_bis.strftime('%H:%M')
             datum = datum_zeit_von.strftime('%d.%m.%Y')            
