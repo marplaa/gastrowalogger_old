@@ -18,6 +18,7 @@ import logging
 import sys
 import math
 from flask.ext.babel import Babel, gettext, ngettext, format_datetime, Locale
+from babel.dates import parse_date, parse_time
 
 
 
@@ -538,17 +539,22 @@ def calculate_chart():#+from_time, to_time):
         return jsonify(-1)
     
     resolution = int(request.form["resolution"])
-    
 
-    from_date = Babel.parse_date(request.form["from_date"], locale=config.get("GASTROWALOGGER", "LOCALE"))
-    from_time = Babel.parse_time(request.form["from_time"], locale=config.get("GASTROWALOGGER", "LOCALE"))
+    from_date = parse_date(request.form["from_date"], locale=config.get("GASTROWALOGGER", "LOCALE"))
+    from_time = parse_time(request.form["from_time"]+":00", locale=config.get("GASTROWALOGGER", "LOCALE"))
     from_date_time = datetime.combine(from_date, from_time)
     from_date_time_tz = tz.normalize(tz.localize(from_date_time))
     from_date_time_utc = from_date_time_tz.astimezone(pytz.timezone('UTC'))    
     
-    to_datetime = datetime.strptime(request.form["to_date"] + ' ' + request.form["to_time"], '%d.%m.%Y %H:%M')
-    to_date_time_tz = tz.normalize(tz.localize(to_datetime))
-    to_date_time_utc = to_date_time_tz.astimezone(pytz.timezone('UTC'))
+    to_date = parse_date(request.form["to_date"], locale=config.get("GASTROWALOGGER", "LOCALE"))
+    to_time = parse_time(request.form["to_time"]+":00", locale=config.get("GASTROWALOGGER", "LOCALE"))
+    to_date_time = datetime.combine(to_date, to_time)
+    to_date_time_tz = tz.normalize(tz.localize(to_date_time))
+    to_date_time_utc = to_date_time_tz.astimezone(pytz.timezone('UTC'))    
+    
+#     to_datetime = datetime.strptime(request.form["to_date"] + ' ' + request.form["to_time"], '%d.%m.%Y %H:%M')
+#     to_date_time_tz = tz.normalize(tz.localize(to_datetime))
+#     to_date_time_utc = to_date_time_tz.astimezone(pytz.timezone('UTC'))
 
     
     from_time = from_date_time_utc.timestamp()  # minus one hour for timezone   # from_datetime.replace(tzinfo=datetime.timezone.utc).timestamp() # from_datetime.timestamp()
@@ -571,11 +577,8 @@ def calculate_chart():#+from_time, to_time):
 #     to_time = to_time.timestamp()
     
     #print(datetime.utcfromtimestamp(from_time), datetime.utcfromtimestamp(to_time))
-    
 
-    
-    
-    points_count = int((to_datetime - from_datetime) / timedelta(seconds = resolution)) + 1
+    points_count = int((to_date_time - from_date_time) / timedelta(seconds = resolution)) + 1
     
     logging.info("points count " + str(points_count))
 #    from_time += 3600
