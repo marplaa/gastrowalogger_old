@@ -29,7 +29,7 @@ function sendSettings() {
         type: 'POST',
         url: $SCRIPT_ROOT + '/sensor/_set_settings',
         data: $( "#settingsForm" ).serialize(),
-        success: function(response) {loadSettings(); },
+        success: function(response) {loadSettings(); if(response) {alertPopup("Werte erfolgreich gespeichert!", "Erfolg")} else {alertPopup("Fehler beim Speichern!", "Fehler")}},
     });
 }
 
@@ -101,7 +101,7 @@ function _init(settings) {
 	
 	$("#button1").click(function (){running=!running; request_Data(); $('#button1').toggleClass('btn-danger btn-success'); if (running) {$("#button1").text("Stop");} else {$("#button1").text("Start");}});
 	$("#updateThres").click(function (){var formData = $("#settingsForm").serialize();  console.log(formData);});
-	$("#invert").prop( "checked", settings["invert"]);
+	$("#invert").prop("checked", settings["invert"]);
 	
 
 	
