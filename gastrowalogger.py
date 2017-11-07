@@ -18,7 +18,7 @@ import logging
 import sys
 import math
 from flask.ext.babel import Babel, gettext, ngettext, format_datetime, Locale
-from babel.dates import parse_date, parse_time
+from babel.dates import parse_date, parse_time, format_date, format_time
 
 
 
@@ -584,7 +584,7 @@ def calculate_chart():#+from_time, to_time):
 #    from_time += 3600
 #    to_time += 3600
 
-    zeitpunkt_bis = from_date_time_tz + timedelta(seconds = resolution) #- (from_time % resolution)) #  +  resolution
+    until = from_date_time_tz + timedelta(seconds = resolution) #- (from_time % resolution)) #  +  resolution
     
     row = cur.fetchone()
     #timestamp_aktuell = row['timestamp'] #+ 3600
@@ -600,16 +600,16 @@ def calculate_chart():#+from_time, to_time):
             
             #### mit timedelta oderso, sonst gehts nicht mit daylightsaving -.-
             sumcount = 0
-            datum_zeit_von = zeitpunkt_bis - timedelta(seconds = resolution)
-            datum_zeit_bis = zeitpunkt_bis - timedelta(seconds = 1)
-            uhrzeit_von = datum_zeit_von.strftime('%H:%M')
-            uhrzeit_bis = datum_zeit_bis.strftime('%H:%M')
-            datum = datum_zeit_von.strftime('%d.%m.%Y')            
+            datetime_from = until - timedelta(seconds = resolution)
+            datetime_to = until - timedelta(seconds = 1)
+            time_from = format_time(datetime_from, locale=config.get("GASTROWALOGGER", "LOCALE"))
+            time_to = format_time(datetime_to, locale=config.get("GASTROWALOGGER", "LOCALE"))
+            date = format_date(datetime_from, locale=config.get("GASTROWALOGGER", "LOCALE"))      
             
             
         
-            if (current_date < zeitpunkt_bis):
-                while current_date < zeitpunkt_bis:
+            if (current_date < until):
+                while current_date < datetime_to:
                     sumcount += row['count']
                     row = cur.fetchone()
                     if (row == None):
@@ -617,17 +617,17 @@ def calculate_chart():#+from_time, to_time):
                         break
                     current_date = tz.fromutc(datetime.utcfromtimestamp(row['timestamp'])) #+ 2*3600
                     
-            #print(datetime.utcfromtimestamp(zeitpunkt_bis), datum, datetime.utcfromtimestamp(current_date))
+            #print(datetime.utcfromtimestamp(datetime_to), date, datetime.utcfromtimestamp(current_date))
                 
             
-            if to_time - from_time > 86400:
-                x_label = datum + ' ' + uhrzeit_von
+            if resolution >= 86400:
+                x_label = date # + ' ' + time_from
             else:
-                x_label = uhrzeit_von
-            gjson['rows'].append({'c':[{'v': x_label, 'f':datum + ' von ' + uhrzeit_von + ' bis ' + uhrzeit_bis + ' Uhr'}, {'v': sumcount}, {'v': 'hmhm'}]})
+                x_label = time_from
+            gjson['rows'].append({'c':[{'v': x_label, 'f':date + ' von ' + time_from + ' bis ' + time_to + ' Uhr'}, {'v': sumcount}, {'v': 'hmhm'}]})
         
         
-        zeitpunkt_bis += timedelta(seconds = resolution)
+        until += timedelta(seconds = resolution)
         
     #db.close()
     
