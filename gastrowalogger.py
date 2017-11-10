@@ -19,8 +19,8 @@ import pytz
 import logging
 import sys
 import math
-from flask.ext.babel import Babel, gettext, ngettext, format_datetime, Locale
-from babel.dates import parse_date, parse_time, format_date, format_time
+from flask.ext.babel import Babel, gettext, ngettext, Locale
+from babel.dates import parse_date, parse_time, format_date, format_time, format_datetime
 
 class Error(Exception):
     """Base class for exceptions in this module."""
@@ -417,16 +417,17 @@ def meter_reading():
         
     sensor = sensors[sensor_name]
 
-    
-    price_per_unit = 4
+    db = get_db()
+    cur = db.execute('SELECT amount FROM prices WHERE type = ? ORDER BY timestamp_from DESC', (types[sensors[sensor_name]["type"]],))
+    entry = cur.fetchone()
+    price_per_unit = entry["amount"]
     
     entries = []
     
-    db = get_db()
-    cur = db.execute("SELECT timestamp AS date, reading, note FROM readings where sensor = ?", (sensor["id"],))
+    cur = db.execute("SELECT timestamp AS date, reading, note FROM readings where sensor = ? ORDER BY timestamp", (sensor["id"],))
     row = cur.fetchone()
     while row is not None:
-        row.update({"date" : tz.fromutc(datetime.utcfromtimestamp(row["date"]))})
+        row.update({"date" : format_datetime(tz.fromutc(datetime.utcfromtimestamp(row["date"])), locale = config.get("GASTROWALOGGER", "LOCALE"), format = "short")})
         entries.append(row)
         row = cur.fetchone()
     
