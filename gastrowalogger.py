@@ -1,3 +1,5 @@
+
+
 # all the imports
 import os
 import sqlite3
@@ -20,7 +22,24 @@ import math
 from flask.ext.babel import Babel, gettext, ngettext, format_datetime, Locale
 from babel.dates import parse_date, parse_time, format_date, format_time
 
+class Error(Exception):
+    """Base class for exceptions in this module."""
+    pass
 
+class NoSuchSensorError(Error):
+    """Exception raised for errors in the input.
+
+    Attributes:
+        expression -- input expression in which the error occurred
+        message -- explanation of the error
+    """
+
+    def __init__(self, expression, message):
+        self.expression = expression
+        self.message = message
+        
+class NoDataError(Error):
+    pass
 
 
 #_serialbus = None
@@ -47,6 +66,20 @@ socketio = SocketIO(app)
 #     socketio.run(app, debug=True)
 
 # CONSTANTS TODO implement in app.config
+
+def get_sensor(sensor_name):
+    
+    if sensor_name not in sensors:
+        raise NoSuchSensorError(sensor_name)
+    else:
+        return sensors[sensor_name]
+    
+def get_active_sensor_from_type(type):
+    for sensor in sensors:
+        if sensors[sensor]["type"] == type and sensors[sensor]["status"] == "active":
+            return get_sensor(sensor)
+    raise NoSuchSensorError(sensor_name)
+        
 
 config = configparser.ConfigParser()
 config.read(sys.path[0] + '/config.ini')
@@ -295,7 +328,7 @@ def get_meter_reading(sensor):
             meter_reading = row['reading']
         
         else:
-            cur = db.execute("SELECT reading FROM readings WHERE sensor = ?", (sensor["id"],))
+            cur = db.execute("SELECT reading FROM readings WHERE sensor = ? ORDER BY timestamp DESC", (sensor["id"],))
             row = cur.fetchone()
             if row is not None:
                 if row['reading'] is not None:
@@ -634,47 +667,36 @@ def calculate_chart():#+from_time, to_time):
     return jsonify(gjson)
 
 
-def get_data(sensor, from_date, to_date, resolution):
+def get_data(sensor, from_date_time, to_date_time, resolution, locale):
     
     data = {}
-    
-    data['sensor'] = sensors[sensor]
-    data['from_date'] = from_date
-    data['to_date'] = to_date
-    data['resolution'] = resolution
-    data['data'] = []
-    
-    if sensor not in sensors:
-        return -1
-    
 
-    #from_datetime = datetime.strptime(request.form["from_date"] + ' ' + request.form["from_time"], '%d.%m.%Y %H:%M')
-    from_date_tz = tz.normalize(tz.localize(from_date))
-    from_date_utc = from_date_tz.astimezone(pytz.timezone('UTC'))    
+    from_date_time_tz = tz.normalize(tz.localize(from_date_time))
+    from_date_time_utc = from_date_time_tz.astimezone(pytz.timezone('UTC'))    
+
+    to_date_time_tz = tz.normalize(tz.localize(to_date_time))
+    to_date_time_utc = to_date_time_tz.astimezone(pytz.timezone('UTC'))    
     
-    #to_datetime = datetime.strptime(request.form["to_date"] + ' ' + request.form["to_time"], '%d.%m.%Y %H:%M')
-    to_date_tz = tz.normalize(tz.localize(to_date))
-    to_date_utc = to_date_tz.astimezone(pytz.timezone('UTC'))
+#     to_datetime = datetime.strptime(request.form["to_date"] + ' ' + request.form["to_time"], '%d.%m.%Y %H:%M')
+#     to_date_time_tz = tz.normalize(tz.localize(to_datetime))
+#     to_date_time_utc = to_date_time_tz.astimezone(pytz.timezone('UTC'))
 
     
-    #retrieve data in interval
-    from_timestamp_utc = from_date_utc.timestamp()  # minus one hour for timezone   # from_datetime.replace(tzinfo=datetime.timezone.utc).timestamp() # from_datetime.timestamp()
-    to_timestamp_utc = to_date_utc.timestamp()  #to_datetime.replace(tzinfo=datetime.timezone.utc).timestamp() #to_datetime.timestamp()
+    from_time = from_date_time_utc.timestamp()  # minus one hour for timezone   # from_datetime.replace(tzinfo=datetime.timezone.utc).timestamp() # from_datetime.timestamp()
+    to_time = to_date_time_utc.timestamp()  #to_datetime.replace(tzinfo=datetime.timezone.utc).timestamp() #to_datetime.timestamp()
     
     db = get_db()
     
-    cur = db.execute("SELECT timestamp, count from consumptions where sensor = ? and timestamp between ? and ? ORDER BY timestamp", (sensors[sensor]["id"], from_timestamp_utc, to_timestamp_utc))
-    
-    
-    
+    cur = db.execute("SELECT timestamp, count from consumptions where sensor = ? and timestamp between ? and ? ORDER BY timestamp", (sensors[sensor]["id"], from_date_time_utc.timestamp(), to_date_time_utc.timestamp()))
 
-    #gjson['cols'] = [{'label': 'Datum', 'type': 'string' }, {'label': 'x 0.01m³', 'type': 'number' }, {'type': 'string', "role": "tooltip", 'p': {'role': 'tooltip'}}]
+    data['columns'] = ["from_datetime", "to_datetime", "values"]
     
-    #gjson['rows'] = []
+    data['rows'] = []
     
     # ab hier in lokaler zeit rechnen weil bei abrundung des tages sonst probleme auftreten. die timestamp ist also quasi utc+00
     
-    logging.info(str(from_date_time_utc) + "  " + str(to_date_time_utc))
+    logging.info(str(from_date_time_tz) + "  " + str(to_date_time_tz))
+
     
 #     from_time = tz.fromutc(datetime.utcfromtimestamp(from_time))
 #     to_time = tz.fromutc(datetime.utcfromtimestamp(to_time))
@@ -682,22 +704,21 @@ def get_data(sensor, from_date, to_date, resolution):
 #     to_time = to_time.timestamp()
     
     #print(datetime.utcfromtimestamp(from_time), datetime.utcfromtimestamp(to_time))
-    
 
+    points_count = int((to_date_time_tz - from_date_time_tz) / timedelta(seconds = resolution)) + 1
     
-    
-    points_count = int((to_timestamp_utc - from_timestamp_utc) / resolution) + 1
+    logging.info("points count " + str(points_count))
 #    from_time += 3600
 #    to_time += 3600
 
-    zeitpunkt_bis = from_time + timedelta.seconds(resolution) #- (from_time % resolution)) #  +  resolution
+    until = from_date_time_tz + timedelta(seconds = resolution) #- (from_time % resolution)) #  +  resolution
     
     row = cur.fetchone()
-    #current_date = row['timestamp'] #+ 3600
+    #timestamp_aktuell = row['timestamp'] #+ 3600
     if row is not None:
-        current_date = row['timestamp'] #+ 3600
+        current_date = tz.fromutc(datetime.utcfromtimestamp(row['timestamp'])) #+ 2*3600
     else:
-        return jsonify(-1)
+        raise NoDataError()
     end_of_data = False
     
     for i in range(0, points_count):
@@ -706,16 +727,11 @@ def get_data(sensor, from_date, to_date, resolution):
             
             #### mit timedelta oderso, sonst gehts nicht mit daylightsaving -.-
             sumcount = 0
-            datum_zeit_von = tz.fromutc(datetime.utcfromtimestamp((zeitpunkt_bis-resolution)))
-            datum_zeit_bis = tz.fromutc(datetime.utcfromtimestamp((zeitpunkt_bis - 1)))
-            uhrzeit_von = datum_zeit_von.strftime('%H:%M')
-            uhrzeit_bis = datum_zeit_bis.strftime('%H:%M')
-            datum = datum_zeit_von.strftime('%d.%m.%Y')            
-            
-            
-        
-            if (current_date < zeitpunkt_bis):
-                while current_date < zeitpunkt_bis:
+            datetime_from = until - timedelta(seconds = resolution)
+            datetime_to = until - timedelta(seconds = 1)
+
+            if (current_date < until):
+                while current_date < datetime_to:
                     sumcount += row['count']
                     row = cur.fetchone()
                     if (row == None):
@@ -723,17 +739,12 @@ def get_data(sensor, from_date, to_date, resolution):
                         break
                     current_date = tz.fromutc(datetime.utcfromtimestamp(row['timestamp'])) #+ 2*3600
                     
-            #print(datetime.utcfromtimestamp(zeitpunkt_bis), datum, datetime.utcfromtimestamp(current_date))
+            #print(datetime.utcfromtimestamp(datetime_to), date, datetime.utcfromtimestamp(current_date))
                 
-            
-            if to_time - from_time > 86400:
-                x_label = datum + ' ' + uhrzeit_von
-            else:
-                x_label = uhrzeit_von
-            gjson['rows'].append({'c':[{'v': x_label, 'f':datum + ' von ' + uhrzeit_von + ' bis ' + uhrzeit_bis + ' Uhr'}, {'v': sumcount}, {'v': 'hmhm'}]})
+            data['rows'].append([datetime_from, datetime_to, sumcount])
         
         
-        zeitpunkt_bis += timedelta.seconds(resolution)
+        until += timedelta(seconds = resolution)
         
     #db.close()
     
@@ -952,10 +963,6 @@ def save_sensors():
     # Writing JSON data
     with open('sensors.json', 'w') as f:
          json.dump(sensors, f)
-    
-    
-
-
 
 def connect_serialbus():
     try:
