@@ -106,59 +106,19 @@ function getData() {
 
 }
 
-function drawChart(json_data) {
+function drawChart(jsonData) {
+	
+	if (jsonData["status"] == "ok") {
+		sensor = jsonData["sensor"]
+		material = new google.charts.Bar(document.getElementById(sensor["id"]
+				+ '_chart_div'));
 
-	sensor = json_data["sensor"]
-	material = new google.charts.Bar(document.getElementById(sensor["id"]
-			+ '_chart_div'));
+		data = new google.visualization.DataTable(jsonData);
 
-	data = new google.visualization.DataTable(json_data);
+		// Instantiate and draw our chart, passing in some options.
 
-	// Instantiate and draw our chart, passing in some options.
-
-	material.draw(data, options[sensor["type"]]);
-}
-
-function drawGasChart(json_data) {
-
-	material_gas = new google.charts.Bar(document
-			.getElementById('gas_chart_div'));
-
-	gas_data = new google.visualization.DataTable(json_data);
-
-	// Instantiate and draw our chart, passing in some options.
-
-	material_gas.draw(gas_data, options_gas);
-
-}
-
-function drawWaterChart(json_data) {
-
-	material_water = new google.charts.Bar(document
-			.getElementById('water_chart_div'));
-
-	water_data = new google.visualization.DataTable(json_data);
-
-	// Instantiate and draw our chart, passing in some options.
-
-	material_water.draw(water_data, options_water);
-}
-
-function requestNewData() {
-	$.ajax({
-		type : 'POST',
-		url : '/gas/_get_chart',
-		data : $("#settings").serialize(),
-		success : newData,
-	});
-	$("#loading_icon").fadeIn();
-}
-
-function newData(jsonData) {
-	data = new google.visualization.DataTable(jsonData);
-
-	// Instantiate and draw our chart, passing in some options.
-
-	material.draw(data, options);
-	$("#loading_icon").fadeOut();
+		material.draw(data, options[sensor["type"]]);
+	}
+	
+	
 }

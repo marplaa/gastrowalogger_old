@@ -53,7 +53,7 @@ function requestNewData() {
 }
 
 function newData(jsonData) {
-	if (jsonData != -1) {
+	if (jsonData["status"] == "ok") {
 		data = new google.visualization.DataTable(jsonData);
 
 		// Instantiate and draw our chart, passing in some options.
@@ -62,7 +62,7 @@ function newData(jsonData) {
 		$("#loading_icon").fadeOut();
 	} else {
 		$("#loading_icon").fadeOut();
-		alertPopupColor("no data", "Notice", "#abc");
+		alertPopupColor(jsonData["error_msg"], "Notice", "#abc");
 	}
 
 }

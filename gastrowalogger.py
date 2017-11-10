@@ -67,17 +67,17 @@ socketio = SocketIO(app)
 
 # CONSTANTS TODO implement in app.config
 
-def get_sensor(sensor_name):
+def get_sensor_by_name(sensor_name):
     
     if sensor_name not in sensors:
         raise NoSuchSensorError(sensor_name)
     else:
         return sensors[sensor_name]
     
-def get_active_sensor_from_type(type):
+def get_active_sensor_by_type(type):
     for sensor in sensors:
         if sensors[sensor]["type"] == type and sensors[sensor]["status"] == "active":
-            return get_sensor(sensor)
+            return get_sensor_by_name(sensor)
     raise NoSuchSensorError(sensor_name)
         
 
@@ -536,12 +536,14 @@ def plot_chart():
         type = request.args["type"]
         for sensor in sensors:
             if sensors[sensor]["type"] == type and sensors[sensor]["status"] == "active":
-                #sensor_name = sensor
-                #break
-                 return redirect('/charts?sensor=' + sensor)
+                return redirect('/charts?sensor=' + sensor)
     else:
         sensor_name = request.args.get("sensor")
-
+    
+    if sensor_name not in sensors:
+        flash(gettext("Unknown sensor:") + " " + sensor_name, 'danger')
+        return redirect('/')
+        
     return render_template('charts.html', current_sensor=sensor_name)
 
 
@@ -560,8 +562,8 @@ def add_sensor_to_database(sensor):
     db.commit()
     
 
-@app.route('/charts/_get_chart', methods=['POST', 'GET'])
-def calculate_chart():#+from_time, to_time):
+@app.route('/charts/_get_chart_old', methods=['POST', 'GET'])
+def calculate_chart_old():#+from_time, to_time):
     
     gjson = {}
     
@@ -666,6 +668,54 @@ def calculate_chart():#+from_time, to_time):
     
     return jsonify(gjson)
 
+@app.route('/charts/_get_chart', methods=['POST', 'GET'])
+def calculate_chart():#+from_time, to_time):
+    
+    sensor_name = request.args["sensor"]
+    try:
+        sensor = get_sensor_by_name(sensor_name)
+    except NoSuchSensorError():
+        #flash(gettext('No such Sensor:') + " " + sensor_name, 'danger')
+        return jsonify({"status" : "error", "error_msg" : gettext('No such Sensor:') + " " + sensor_name})
+        
+
+    resolution = int(request.form["resolution"])
+    locale = config.get("GASTROWALOGGER", "LOCALE")
+
+    from_date = parse_date(request.form["from_date"], locale=locale)
+    from_time = parse_time(request.form["from_time"]+":00", locale=locale)
+    from_date_time = datetime.combine(from_date, from_time)
+    
+    to_date = parse_date(request.form["to_date"], locale=locale)
+    to_time = parse_time(request.form["to_time"]+":00", locale=locale)
+    to_date_time = datetime.combine(to_date, to_time)
+    
+    data = get_data(sensor, from_date_time, to_date_time, resolution, locale)
+    
+    gjson = {}
+    
+    gjson['cols'] = [{'label': 'Datum', 'type': 'string' }, {'label': 'Liter', 'type': 'number' }]
+    
+    gjson['rows'] = []
+    
+    gjson['sensor'] = sensor
+    
+    gjson['status'] = "ok"
+    
+    for row in data["rows"]:
+        time_from = format_time(row["datetime_from"], locale=locale, format='short')
+        time_to = format_time(row["datetime_to"], locale=locale, format='short')
+        date = format_date(row["datetime_from"], locale=locale, format='short')      
+        if resolution >= 86400:
+            x_label = date
+        else:
+            x_label = time_from
+        #date_time = datetime.datetime.fromtimestamp(int(row['timestamp'])).strftime('%H:%M:%S')
+        gjson['rows'].append({'c':[{'v': x_label, 'f' : date + ' ' + gettext("from") + " " + time_from + ' ' + gettext("to") + ' ' + time_to}, {'v': row['value']}]})
+    
+    #gjson['rows'] = [{'c':[{'v':'a'}, {'v':6}]}, {'c':[{'v':'b'}, {'v': 4}]}]
+    return jsonify(gjson)
+    
 
 def get_data(sensor, from_date_time, to_date_time, resolution, locale):
     
@@ -687,7 +737,7 @@ def get_data(sensor, from_date_time, to_date_time, resolution, locale):
     
     db = get_db()
     
-    cur = db.execute("SELECT timestamp, count from consumptions where sensor = ? and timestamp between ? and ? ORDER BY timestamp", (sensors[sensor]["id"], from_date_time_utc.timestamp(), to_date_time_utc.timestamp()))
+    cur = db.execute("SELECT timestamp, count from consumptions where sensor = ? and timestamp between ? and ? ORDER BY timestamp", (sensor["id"], from_date_time_utc.timestamp(), to_date_time_utc.timestamp()))
 
     data['columns'] = ["from_datetime", "to_datetime", "values"]
     
@@ -741,7 +791,7 @@ def get_data(sensor, from_date_time, to_date_time, resolution, locale):
                     
             #print(datetime.utcfromtimestamp(datetime_to), date, datetime.utcfromtimestamp(current_date))
                 
-            data['rows'].append([datetime_from, datetime_to, sumcount])
+            data['rows'].append({"datetime_from" : datetime_from, "datetime_to" : datetime_to, "value" : sumcount})
         
         
         until += timedelta(seconds = resolution)
@@ -828,8 +878,11 @@ def to_google_charts_json(entries):
     gjson['rows'] = []
     
     for row in entries:
+        time_from = format_time(datetime_from, locale=config.get("GASTROWALOGGER", "LOCALE"))
+        time_to = format_time(datetime_to, locale=config.get("GASTROWALOGGER", "LOCALE"))
+        date = format_date(datetime_from, locale=config.get("GASTROWALOGGER", "LOCALE"))      
         #date_time = datetime.datetime.fromtimestamp(int(row['timestamp'])).strftime('%H:%M:%S')
-        gjson['rows'].append({'c':[{'v': row['datum']}, {'v': row['verbrauch']}]})
+        gjson['rows'].append({'c':[{'v': row['datetime_from'] + row['datetime_to']}, {'v': row['verbrauch']}]})
     
     #gjson['rows'] = [{'c':[{'v':'a'}, {'v':6}]}, {'c':[{'v':'b'}, {'v': 4}]}]
     return jsonify(gjson)
