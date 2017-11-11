@@ -369,7 +369,7 @@ def save_meter_reading():
 
 
 @app.route('/sensor/current', methods=['GET'])
-def wasserverbrauch():
+def current_usage():
     
     if request.args.get("type"):
         type = request.args["type"]
@@ -435,8 +435,8 @@ def meter_reading():
 
 
 
-@app.route('/charts/_get_csv', methods=['POST'])
-def get_csv():#+from_time, to_time):
+@app.route('/charts/_get_csv_old', methods=['POST'])
+def get_csv_old():#+from_time, to_time):
      
     sensor = request.form["sensor"]
     
@@ -716,6 +716,48 @@ def calculate_chart():#+from_time, to_time):
     
     #gjson['rows'] = [{'c':[{'v':'a'}, {'v':6}]}, {'c':[{'v':'b'}, {'v': 4}]}]
     return jsonify(gjson)
+
+@app.route('/charts/_get_csv', methods=['POST', 'GET'])
+def calculate_csv():#+from_time, to_time):
+    
+    sensor_name = request.args["sensor"]
+    try:
+        sensor = get_sensor_by_name(sensor_name)
+    except NoSuchSensorError():
+        #flash(gettext('No such Sensor:') + " " + sensor_name, 'danger')
+        return jsonify({"status" : "error", "error_msg" : gettext('No such Sensor:') + " " + sensor_name})
+        
+
+    resolution = int(request.form["resolution"])
+    locale = config.get("GASTROWALOGGER", "LOCALE")
+
+    from_date = parse_date(request.form["from_date"], locale=locale)
+    from_time = parse_time(request.form["from_time"]+":00", locale=locale)
+    from_date_time = datetime.combine(from_date, from_time)
+    
+    to_date = parse_date(request.form["to_date"], locale=locale)
+    to_time = parse_time(request.form["to_time"]+":00", locale=locale)
+    to_date_time = datetime.combine(to_date, to_time)
+    
+    data = get_data(sensor, from_date_time, to_date_time, resolution, locale)
+    
+    csv = gettext("date") + ";" + gettext("from") + ";" + gettext("to") + ";x"  + str(config.getfloat(sensor["type"].upper(),"UNITS_PER_IMPULSE")) + " " + config.get(sensor["type"].upper(),"UNIT_STRING") + "\n"
+    
+    filename = sensor["type"] + "_consumption_" + request.form["from_date"] + "-" +  request.form["to_date"]
+    
+    for row in data["rows"]:
+        time_from = format_time(row["datetime_from"], locale=locale, format='short')
+        time_to = format_time(row["datetime_to"], locale=locale, format='short')
+        date = format_date(row["datetime_from"], locale=locale, format='short')      
+
+        #date_time = datetime.datetime.fromtimestamp(int(row['timestamp'])).strftime('%H:%M:%S')
+        csv += date + ';' + time_from + ";" + time_to + ';' + str(row['value']) + '\n'
+    
+    response = make_response(csv)
+    # This is the key: Set the right header for the response
+    # to be downloaded, instead of just printed on the browser
+    response.headers["Content-Disposition"] = "attachment; filename=" + filename + ".csv"
+    return response
     
 
 def get_data(sensor, from_date_time, to_date_time, resolution, locale):
