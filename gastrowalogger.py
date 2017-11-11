@@ -1,13 +1,8 @@
-
-
-# all the imports
 import os
 import sqlite3
 import threading
 import configparser
-from flask import Flask, jsonify, request, session, g, redirect, url_for, abort, \
-     render_template, flash, make_response
-
+from flask import Flask, jsonify, request, session, g, redirect, url_for, abort, render_template, flash, make_response
 from SerialBusDevice import SerialBusDevice
 import sensor_device
 from datetime import datetime, timedelta
