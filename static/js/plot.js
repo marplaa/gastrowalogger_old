@@ -5,14 +5,14 @@
 google.charts.load('current', {
 	'packages' : [ 'bar' ]
 });
-google.charts.setOnLoadCallback(drawTitleSubtitle);
+//google.charts.setOnLoadCallback(drawChart);
 
 var sensor;
 var options;
 
 function setSensor(_sensor) {
 	sensor = _sensor;
-	google.charts.setOnLoadCallback(drawTitleSubtitle);
+	google.charts.setOnLoadCallback(drawChart);
 
 	options = {
 		height : 700,
@@ -20,16 +20,16 @@ function setSensor(_sensor) {
 			position : 'none'
 		},
 		chart : {
-			title : sensors[sensor].alias + " Verbrauch"
+			title : sensors[sensor].alias
 		},
-		colors : [ icon_mapping[sensors[sensor].type]["color"], icon_mapping[sensors[sensor].type]["color"] ]
+		colors : [icon_mapping[sensors[sensor].type]["color"], icon_mapping[sensors[sensor].type]["color"] ]
 	};
 }
 
 var data;
 var material;
 
-function drawTitleSubtitle() {
+function drawChart() {
 
 	material = new google.charts.Bar(document.getElementById('chart_div'));
 

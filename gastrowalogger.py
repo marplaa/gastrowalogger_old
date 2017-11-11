@@ -435,98 +435,7 @@ def meter_reading():
 
 
 
-@app.route('/charts/_get_csv_old', methods=['POST'])
-def get_csv_old():#+from_time, to_time):
-     
-    sensor = request.form["sensor"]
-    
-    if sensor not in sensors:
-        return jsonify(-1)
-    
-    resolution = int(request.form["resolution"])
-    
 
-    
-    from_datetime = datetime.strptime(request.form["from_date"] + ' ' + request.form["from_time"], '%d.%m.%Y %H:%M')
-    #from_datetime.replace(tzinfo=tz)
-    to_datetime = datetime.strptime(request.form["to_date"] + ' ' + request.form["to_time"], '%d.%m.%Y %H:%M')
-   # to_datetime.replace(tzinfo=tz)
-    
-    from_time = from_datetime.timestamp()  # minus one hour for timezone   # from_datetime.replace(tzinfo=datetime.timezone.utc).timestamp() # from_datetime.timestamp()
-    to_time = to_datetime.timestamp()  #to_datetime.replace(tzinfo=datetime.timezone.utc).timestamp() #to_datetime.timestamp()
-    db = get_db()
-    cur = db.execute("SELECT timestamp, count from consumptions where sensor = ? and timestamp between ? and ? ORDER BY timestamp", (sensors[sensor]["id"], from_time, to_time))
-
-    gjson = {}
-    
-    gjson['cols'] = [{'label': 'Datum', 'type': 'string' }, {'label': 'x 0.01m³', 'type': 'number' }, {'type': 'string', "role": "tooltip", 'p': {'role': 'tooltip'}}]
-    
-    gjson['rows'] = []
-    
-    # ab hier in lokaler zeit rechnen weil bei abrundung des tages sonst probleme auftreten. die timestamp ist also quasi utc+00
-
-    from_time = tz.fromutc(datetime.utcfromtimestamp(from_time))
-    to_time = tz.fromutc(datetime.utcfromtimestamp(to_time))
-    from_time = from_time.timestamp()
-    to_time = to_time.timestamp() 
-    
-    points_count = int((to_time - from_time) / resolution) + 1
-
-    
-    zeitpunkt_bis = from_time + resolution #- (from_time % resolution)) #  +  resolution
-     
-    csv = ""
-    filename = gettext("water") + "_consumption" + request.form["from_date"] + "-" +  request.form["to_date"]
-     
-    # ab hier in lokaler zeit rechnen weil bei abrundung des tages sonst probleme auftreten. die timestamp ist also quasi utc+00
-
-     
-     
-    row = cur.fetchone()
-    timestamp_aktuell = row['timestamp'] + 3600
-    end_of_data = False
-     
-    for i in range(0, points_count):
-         
-        if not end_of_data:
-             
-            sumcount = 0
-            datum_zeit_von = tz.fromutc(datetime.utcfromtimestamp((zeitpunkt_bis-resolution)))
-            datum_zeit_bis = tz.fromutc(datetime.utcfromtimestamp((zeitpunkt_bis - 1)))
-            uhrzeit_von = datum_zeit_von.strftime('%H:%M')
-            uhrzeit_bis = datum_zeit_bis.strftime('%H:%M')
-            datum = datum_zeit_von.strftime('%d.%m.%Y')
-            
-            
-        
-            if (timestamp_aktuell < zeitpunkt_bis):
-                while timestamp_aktuell < zeitpunkt_bis:
-                    sumcount += row['count']
-                    row = cur.fetchone()
-                    if (row == None):
-                        end_of_data = True
-                        break
-                    timestamp_aktuell = row['timestamp'] #+ 2*3600
-                    
-            #print(datetime.utcfromtimestamp(zeitpunkt_bis), datum, datetime.utcfromtimestamp(timestamp_aktuell))
-                
-            
-            if to_time - from_time > 86400:
-                x_label = datum + ' ' + uhrzeit_von
-            else:
-                x_label = uhrzeit_von
-            csv += datum + ';' + uhrzeit_von + ':00;' + str(sumcount) + '\n' #gjson['rows'].append({'c':[{'v': x_label, 'f':datum + ' von ' + uhrzeit_von + ' bis ' + uhrzeit_bis + ' Uhr'}, {'v': sumcount}, {'v': 'hmhm'}]})
-         
-        zeitpunkt_bis += resolution
-         
-    db.close()
-     
-     
-    response = make_response(csv)
-    # This is the key: Set the right header for the response
-    # to be downloaded, instead of just printed on the browser
-    response.headers["Content-Disposition"] = "attachment; filename=" + filename + ".csv"
-    return response
 
 
 
@@ -563,111 +472,7 @@ def add_sensor_to_database(sensor):
     db.commit()
     
 
-@app.route('/charts/_get_chart_old', methods=['POST', 'GET'])
-def calculate_chart_old():#+from_time, to_time):
-    
-    gjson = {}
-    
-    sensor = request.args["sensor"]
-    gjson['sensor'] = sensors[sensor]
-    
-    if sensor not in sensors:
-        return jsonify(-1)
-    
-    resolution = int(request.form["resolution"])
 
-    from_date = parse_date(request.form["from_date"], locale=config.get("GASTROWALOGGER", "LOCALE"))
-    from_time = parse_time(request.form["from_time"]+":00", locale=config.get("GASTROWALOGGER", "LOCALE"))
-    from_date_time = datetime.combine(from_date, from_time)
-    from_date_time_tz = tz.normalize(tz.localize(from_date_time))
-    from_date_time_utc = from_date_time_tz.astimezone(pytz.timezone('UTC'))    
-    
-    to_date = parse_date(request.form["to_date"], locale=config.get("GASTROWALOGGER", "LOCALE"))
-    to_time = parse_time(request.form["to_time"]+":00", locale=config.get("GASTROWALOGGER", "LOCALE"))
-    to_date_time = datetime.combine(to_date, to_time)
-    to_date_time_tz = tz.normalize(tz.localize(to_date_time))
-    to_date_time_utc = to_date_time_tz.astimezone(pytz.timezone('UTC'))    
-    
-#     to_datetime = datetime.strptime(request.form["to_date"] + ' ' + request.form["to_time"], '%d.%m.%Y %H:%M')
-#     to_date_time_tz = tz.normalize(tz.localize(to_datetime))
-#     to_date_time_utc = to_date_time_tz.astimezone(pytz.timezone('UTC'))
-
-    
-    from_time = from_date_time_utc.timestamp()  # minus one hour for timezone   # from_datetime.replace(tzinfo=datetime.timezone.utc).timestamp() # from_datetime.timestamp()
-    to_time = to_date_time_utc.timestamp()  #to_datetime.replace(tzinfo=datetime.timezone.utc).timestamp() #to_datetime.timestamp()
-    db = get_db()
-    cur = db.execute("SELECT timestamp, count from consumptions where sensor = ? and timestamp between ? and ? ORDER BY timestamp", (sensors[sensor]["id"], from_date_time_utc.timestamp(), to_date_time_utc.timestamp()))
-
-    gjson['cols'] = [{'label': 'Datum', 'type': 'string' }, {'label': 'x 0.01m³', 'type': 'number' }, {'type': 'string', "role": "tooltip", 'p': {'role': 'tooltip'}}]
-    
-    gjson['rows'] = []
-    
-    # ab hier in lokaler zeit rechnen weil bei abrundung des tages sonst probleme auftreten. die timestamp ist also quasi utc+00
-    
-    logging.info(str(from_date_time_tz) + "  " + str(to_date_time_tz))
-
-    
-#     from_time = tz.fromutc(datetime.utcfromtimestamp(from_time))
-#     to_time = tz.fromutc(datetime.utcfromtimestamp(to_time))
-#     from_time = from_time.timestamp()
-#     to_time = to_time.timestamp()
-    
-    #print(datetime.utcfromtimestamp(from_time), datetime.utcfromtimestamp(to_time))
-
-    points_count = int((to_date_time - from_date_time) / timedelta(seconds = resolution)) + 1
-    
-    logging.info("points count " + str(points_count))
-#    from_time += 3600
-#    to_time += 3600
-
-    until = from_date_time_tz + timedelta(seconds = resolution) #- (from_time % resolution)) #  +  resolution
-    
-    row = cur.fetchone()
-    #timestamp_aktuell = row['timestamp'] #+ 3600
-    if row is not None:
-        current_date = tz.fromutc(datetime.utcfromtimestamp(row['timestamp'])) #+ 2*3600
-    else:
-        return jsonify(-1)
-    end_of_data = False
-    
-    for i in range(0, points_count):
-
-        if not end_of_data:
-            
-            #### mit timedelta oderso, sonst gehts nicht mit daylightsaving -.-
-            sumcount = 0
-            datetime_from = until - timedelta(seconds = resolution)
-            datetime_to = until - timedelta(seconds = 1)
-            time_from = format_time(datetime_from, locale=config.get("GASTROWALOGGER", "LOCALE"))
-            time_to = format_time(datetime_to, locale=config.get("GASTROWALOGGER", "LOCALE"))
-            date = format_date(datetime_from, locale=config.get("GASTROWALOGGER", "LOCALE"))      
-            
-            
-        
-            if (current_date < until):
-                while current_date < datetime_to:
-                    sumcount += row['count']
-                    row = cur.fetchone()
-                    if (row == None):
-                        end_of_data = True
-                        break
-                    current_date = tz.fromutc(datetime.utcfromtimestamp(row['timestamp'])) #+ 2*3600
-                    
-            #print(datetime.utcfromtimestamp(datetime_to), date, datetime.utcfromtimestamp(current_date))
-                
-            
-            if resolution >= 86400:
-                x_label = date # + ' ' + time_from
-            else:
-                x_label = time_from
-            gjson['rows'].append({'c':[{'v': x_label, 'f':date + ' von ' + time_from + ' bis ' + time_to + ' Uhr'}, {'v': sumcount}, {'v': 'hmhm'}]})
-        
-        
-        until += timedelta(seconds = resolution)
-        
-    #db.close()
-    
-    return jsonify(gjson)
 
 @app.route('/charts/_get_chart', methods=['POST', 'GET'])
 def calculate_chart():#+from_time, to_time):
@@ -2105,3 +1910,202 @@ def close_db(error):
 #         
 # 
 #     return jsonify(sensors)
+
+# @app.route('/charts/_get_chart_old', methods=['POST', 'GET'])
+# def calculate_chart_old():#+from_time, to_time):
+#     
+#     gjson = {}
+#     
+#     sensor = request.args["sensor"]
+#     gjson['sensor'] = sensors[sensor]
+#     
+#     if sensor not in sensors:
+#         return jsonify(-1)
+#     
+#     resolution = int(request.form["resolution"])
+# 
+#     from_date = parse_date(request.form["from_date"], locale=config.get("GASTROWALOGGER", "LOCALE"))
+#     from_time = parse_time(request.form["from_time"]+":00", locale=config.get("GASTROWALOGGER", "LOCALE"))
+#     from_date_time = datetime.combine(from_date, from_time)
+#     from_date_time_tz = tz.normalize(tz.localize(from_date_time))
+#     from_date_time_utc = from_date_time_tz.astimezone(pytz.timezone('UTC'))    
+#     
+#     to_date = parse_date(request.form["to_date"], locale=config.get("GASTROWALOGGER", "LOCALE"))
+#     to_time = parse_time(request.form["to_time"]+":00", locale=config.get("GASTROWALOGGER", "LOCALE"))
+#     to_date_time = datetime.combine(to_date, to_time)
+#     to_date_time_tz = tz.normalize(tz.localize(to_date_time))
+#     to_date_time_utc = to_date_time_tz.astimezone(pytz.timezone('UTC'))    
+#     
+# #     to_datetime = datetime.strptime(request.form["to_date"] + ' ' + request.form["to_time"], '%d.%m.%Y %H:%M')
+# #     to_date_time_tz = tz.normalize(tz.localize(to_datetime))
+# #     to_date_time_utc = to_date_time_tz.astimezone(pytz.timezone('UTC'))
+# 
+#     
+#     from_time = from_date_time_utc.timestamp()  # minus one hour for timezone   # from_datetime.replace(tzinfo=datetime.timezone.utc).timestamp() # from_datetime.timestamp()
+#     to_time = to_date_time_utc.timestamp()  #to_datetime.replace(tzinfo=datetime.timezone.utc).timestamp() #to_datetime.timestamp()
+#     db = get_db()
+#     cur = db.execute("SELECT timestamp, count from consumptions where sensor = ? and timestamp between ? and ? ORDER BY timestamp", (sensors[sensor]["id"], from_date_time_utc.timestamp(), to_date_time_utc.timestamp()))
+# 
+#     gjson['cols'] = [{'label': 'Datum', 'type': 'string' }, {'label': 'x 0.01m³', 'type': 'number' }, {'type': 'string', "role": "tooltip", 'p': {'role': 'tooltip'}}]
+#     
+#     gjson['rows'] = []
+#     
+#     # ab hier in lokaler zeit rechnen weil bei abrundung des tages sonst probleme auftreten. die timestamp ist also quasi utc+00
+#     
+#     logging.info(str(from_date_time_tz) + "  " + str(to_date_time_tz))
+# 
+#     
+# #     from_time = tz.fromutc(datetime.utcfromtimestamp(from_time))
+# #     to_time = tz.fromutc(datetime.utcfromtimestamp(to_time))
+# #     from_time = from_time.timestamp()
+# #     to_time = to_time.timestamp()
+#     
+#     #print(datetime.utcfromtimestamp(from_time), datetime.utcfromtimestamp(to_time))
+# 
+#     points_count = int((to_date_time - from_date_time) / timedelta(seconds = resolution)) + 1
+#     
+#     logging.info("points count " + str(points_count))
+# #    from_time += 3600
+# #    to_time += 3600
+# 
+#     until = from_date_time_tz + timedelta(seconds = resolution) #- (from_time % resolution)) #  +  resolution
+#     
+#     row = cur.fetchone()
+#     #timestamp_aktuell = row['timestamp'] #+ 3600
+#     if row is not None:
+#         current_date = tz.fromutc(datetime.utcfromtimestamp(row['timestamp'])) #+ 2*3600
+#     else:
+#         return jsonify(-1)
+#     end_of_data = False
+#     
+#     for i in range(0, points_count):
+# 
+#         if not end_of_data:
+#             
+#             #### mit timedelta oderso, sonst gehts nicht mit daylightsaving -.-
+#             sumcount = 0
+#             datetime_from = until - timedelta(seconds = resolution)
+#             datetime_to = until - timedelta(seconds = 1)
+#             time_from = format_time(datetime_from, locale=config.get("GASTROWALOGGER", "LOCALE"))
+#             time_to = format_time(datetime_to, locale=config.get("GASTROWALOGGER", "LOCALE"))
+#             date = format_date(datetime_from, locale=config.get("GASTROWALOGGER", "LOCALE"))      
+#             
+#             
+#         
+#             if (current_date < until):
+#                 while current_date < datetime_to:
+#                     sumcount += row['count']
+#                     row = cur.fetchone()
+#                     if (row == None):
+#                         end_of_data = True
+#                         break
+#                     current_date = tz.fromutc(datetime.utcfromtimestamp(row['timestamp'])) #+ 2*3600
+#                     
+#             #print(datetime.utcfromtimestamp(datetime_to), date, datetime.utcfromtimestamp(current_date))
+#                 
+#             
+#             if resolution >= 86400:
+#                 x_label = date # + ' ' + time_from
+#             else:
+#                 x_label = time_from
+#             gjson['rows'].append({'c':[{'v': x_label, 'f':date + ' von ' + time_from + ' bis ' + time_to + ' Uhr'}, {'v': sumcount}, {'v': 'hmhm'}]})
+#         
+#         
+#         until += timedelta(seconds = resolution)
+#         
+#     #db.close()
+#     
+#     return jsonify(gjson)
+
+# @app.route('/charts/_get_csv_old', methods=['POST'])
+# def get_csv_old():#+from_time, to_time):
+#      
+#     sensor = request.form["sensor"]
+#     
+#     if sensor not in sensors:
+#         return jsonify(-1)
+#     
+#     resolution = int(request.form["resolution"])
+#     
+# 
+#     
+#     from_datetime = datetime.strptime(request.form["from_date"] + ' ' + request.form["from_time"], '%d.%m.%Y %H:%M')
+#     #from_datetime.replace(tzinfo=tz)
+#     to_datetime = datetime.strptime(request.form["to_date"] + ' ' + request.form["to_time"], '%d.%m.%Y %H:%M')
+#    # to_datetime.replace(tzinfo=tz)
+#     
+#     from_time = from_datetime.timestamp()  # minus one hour for timezone   # from_datetime.replace(tzinfo=datetime.timezone.utc).timestamp() # from_datetime.timestamp()
+#     to_time = to_datetime.timestamp()  #to_datetime.replace(tzinfo=datetime.timezone.utc).timestamp() #to_datetime.timestamp()
+#     db = get_db()
+#     cur = db.execute("SELECT timestamp, count from consumptions where sensor = ? and timestamp between ? and ? ORDER BY timestamp", (sensors[sensor]["id"], from_time, to_time))
+# 
+#     gjson = {}
+#     
+#     gjson['cols'] = [{'label': 'Datum', 'type': 'string' }, {'label': 'x 0.01m³', 'type': 'number' }, {'type': 'string', "role": "tooltip", 'p': {'role': 'tooltip'}}]
+#     
+#     gjson['rows'] = []
+#     
+#     # ab hier in lokaler zeit rechnen weil bei abrundung des tages sonst probleme auftreten. die timestamp ist also quasi utc+00
+# 
+#     from_time = tz.fromutc(datetime.utcfromtimestamp(from_time))
+#     to_time = tz.fromutc(datetime.utcfromtimestamp(to_time))
+#     from_time = from_time.timestamp()
+#     to_time = to_time.timestamp() 
+#     
+#     points_count = int((to_time - from_time) / resolution) + 1
+# 
+#     
+#     zeitpunkt_bis = from_time + resolution #- (from_time % resolution)) #  +  resolution
+#      
+#     csv = ""
+#     filename = gettext("water") + "_consumption" + request.form["from_date"] + "-" +  request.form["to_date"]
+#      
+#     # ab hier in lokaler zeit rechnen weil bei abrundung des tages sonst probleme auftreten. die timestamp ist also quasi utc+00
+# 
+#      
+#      
+#     row = cur.fetchone()
+#     timestamp_aktuell = row['timestamp'] + 3600
+#     end_of_data = False
+#      
+#     for i in range(0, points_count):
+#          
+#         if not end_of_data:
+#              
+#             sumcount = 0
+#             datum_zeit_von = tz.fromutc(datetime.utcfromtimestamp((zeitpunkt_bis-resolution)))
+#             datum_zeit_bis = tz.fromutc(datetime.utcfromtimestamp((zeitpunkt_bis - 1)))
+#             uhrzeit_von = datum_zeit_von.strftime('%H:%M')
+#             uhrzeit_bis = datum_zeit_bis.strftime('%H:%M')
+#             datum = datum_zeit_von.strftime('%d.%m.%Y')
+#             
+#             
+#         
+#             if (timestamp_aktuell < zeitpunkt_bis):
+#                 while timestamp_aktuell < zeitpunkt_bis:
+#                     sumcount += row['count']
+#                     row = cur.fetchone()
+#                     if (row == None):
+#                         end_of_data = True
+#                         break
+#                     timestamp_aktuell = row['timestamp'] #+ 2*3600
+#                     
+#             #print(datetime.utcfromtimestamp(zeitpunkt_bis), datum, datetime.utcfromtimestamp(timestamp_aktuell))
+#                 
+#             
+#             if to_time - from_time > 86400:
+#                 x_label = datum + ' ' + uhrzeit_von
+#             else:
+#                 x_label = uhrzeit_von
+#             csv += datum + ';' + uhrzeit_von + ':00;' + str(sumcount) + '\n' #gjson['rows'].append({'c':[{'v': x_label, 'f':datum + ' von ' + uhrzeit_von + ' bis ' + uhrzeit_bis + ' Uhr'}, {'v': sumcount}, {'v': 'hmhm'}]})
+#          
+#         zeitpunkt_bis += resolution
+#          
+#     db.close()
+#      
+#      
+#     response = make_response(csv)
+#     # This is the key: Set the right header for the response
+#     # to be downloaded, instead of just printed on the browser
+#     response.headers["Content-Disposition"] = "attachment; filename=" + filename + ".csv"
+#     return response
