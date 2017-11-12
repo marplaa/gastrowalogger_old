@@ -46,7 +46,7 @@ def store_data():
     
     for sensor in sensors:
         try:
-            device = SerialBusDevice.SerialBusDevice(sensors[sensor]["address"], serialbus=serialbus, device_type=sensor_device)
+            device = SerialBusDevice(sensors[sensor]["address"], serialbus=serialbus, device_type=sensor_device)
             value =  int(device.get_data())
             if last_values[sensor][1] == 0 and value != 0:
                 conn.execute("INSERT INTO consumptions (sensor, 'timestamp', 'count') VALUES (?,?,?)", (sensors[sensor]["id"], last_values[sensor][0], 0))
