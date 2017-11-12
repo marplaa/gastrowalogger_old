@@ -11,8 +11,6 @@ DATA_TYPE_STRING = 3
 
 class SerialBusDevice:
 
-    
-
     def __init__(self, device_addr, serialbus=None, host=None, port=None, device_type=None):
         if serialbus is not None:
             self.serialbus = serialbus

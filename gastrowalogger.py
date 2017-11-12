@@ -3,7 +3,7 @@ import sqlite3
 import threading
 import configparser
 from flask import Flask, jsonify, request, session, g, redirect, url_for, abort, render_template, flash, make_response
-from SerialBusDevice import SerialBusDevice
+from SerialBus import SerialBusTCP, SerialBusDevice
 import sensor_device
 from datetime import datetime, timedelta
 from time import timezone
@@ -862,7 +862,7 @@ def save_sensors():
 
 def connect_serialbus():
     try:
-        from SerialBus import SerialBusTCP
+        #from SerialBus import SerialBusTCP
         serialbus = SerialBusTCP()
         serialbus.connect(config.get("SERIALBUS", "SERIALBUS_HOST"), config.getint("SERIALBUS", "SERIALBUS_PORT"))
         return serialbus

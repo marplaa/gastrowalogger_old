@@ -2,8 +2,7 @@
 import sqlite3
 import time
 import datetime
-from SerialBus import SerialBusTCP
-import SerialBusDevice
+from SerialBus import SerialBusTCP, SerialBusDevice
 import sensor_device
 import logging
 import sys

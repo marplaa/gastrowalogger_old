@@ -7,5 +7,5 @@ setup(name='SerialBus',
       description='SerialBus Modules',
       author='Martin Plaas',
       author_email='martin.plaas@gmail.com',
-      py_modules=['SerialBus', 'SerialBusDevice', 'sensor_device'],
+      py_modules=['SerialBus', 'sensor_device'],
      )
