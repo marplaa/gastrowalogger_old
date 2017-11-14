@@ -19,19 +19,19 @@
 			<h3>
 				<span class="flaticon-flame" style="color: #ff6600;"></span>
 				Gaszählerstände <small>Abgelesen und errechnet</small>
-			
-			<form style="display:inline" class="form-inline" method="get" action="/meters/meter_reading">
-				
-					<select name="sensor" class="form-control"
-						id="sensor" onchange="this.form.submit()"> 
-						{% for sensor in sensors %} {% if sensors[sensor].type == sensors[current_sensor].type %}
-						
-						<option {%if current_sensor == sensor %}selected{% endif %} value={{sensor}}>{{sensors[sensor].alias}}</option>
-						  {% endif %}
-						  
-						  {% endfor %}
+
+				<form style="display: inline" class="form-inline" method="get"
+					action="/meters/meter_reading">
+
+					<select name="sensor" class="form-control" id="sensor"
+						onchange="this.form.submit()"> {% for sensor in sensors
+						%} {% if sensors[sensor].type == sensors[current_sensor].type %}
+
+						<option {%if current_sensor==
+							sensor %}selected{% endif %} value={{sensor}}>{{sensors[sensor].alias}}</option>
+						{% endif %} {% endfor %}
 					</select>
-			</form>
+				</form>
 			</h3>
 		</div>
 	</div>

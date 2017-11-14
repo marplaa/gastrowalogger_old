@@ -150,7 +150,7 @@ def sensor_settings():
             sensor_name = request.args.get("sensor")
         sensor = sensors[sensor_name]
         if sensor is not None:
-            settings = get_settings(sensor)
+            settings = get_sensor_settings(sensor)
             settings.update({"resolution" : config.getint(sensor["type"].upper(), "PLOTTING_RESOLUTION")})
             settings.update({"sensor" : sensor_name})
         
@@ -162,7 +162,7 @@ def sensor_settings():
         return render_template('sensor_settings.html')
 
     
-def get_settings(sensor):
+def get_sensor_settings(sensor):
     
     global lock
     with lock:
@@ -193,6 +193,34 @@ def get_settings(sensor):
         finally:
             if serialbus is not None:
                 serialbus.close()
+                
+@app.route('/sensor/_set_settings', methods=['POST'])
+def set_sensor_settings():
+    try:
+        sensor_name = request.form["sensor"]
+        sensor = sensors[sensor_name]
+        
+        ok = True
+        serialbus = connect_serialbus()
+        device = SerialBusDevice(sensor["address"], serialbus, device_type = sensor_device)
+        ok &= device.set_value(sensor_device.HIGH_THRES, int(request.form["highThres"]))
+        ok &= device.set_value(sensor_device.LOW_THRES, int(request.form["lowThres"]))
+        ok &= device.set_value(sensor_device.MIN_IMPULSE_LENGTH, int(request.form["min_impulse_length"]))
+        ok &= device.set_value(sensor_device.MIN_IDLE_LENGTH, int(request.form["min_idle_length"]))
+        ok &= device.set_value(sensor_device.MAX_FAILS, int(request.form["max_fails"]))
+        ok &= device.set_value(sensor_device.HYSTERESE, int(request.form["hysteresis"]))
+        ok &= device.set_value(sensor_device.INTERVAL, int(request.form["interval"]))
+        if 'invert' in request.form:
+            ok &= device.set_value(sensor_device.INVERT, True)
+        else:
+            ok &= device.set_value(sensor_device.INVERT, False)
+
+        return jsonify(ok)
+    except:
+        raise
+    finally:
+        if serialbus is not None:
+            serialbus.close()
 
 @app.route('/sensors/_activate', methods=['POST'])
 def activate_sensor():
@@ -221,9 +249,8 @@ def activate_sensor():
 
 @app.route('/sensors/_toggle_status', methods=['POST'])
 def toggle_sensor_status():
+    
     sensor = request.form['sensor']
-    
-    
     if sensors[sensor]["status"] == "active":
         
         # deactivate
@@ -274,40 +301,14 @@ def get_calibration_data_():
                 serialbus.close()
 
 
-@app.route('/sensor/_set_settings', methods=['POST'])
-def set_settings():
-    try:
-        sensor_name = request.form["sensor"]
-        sensor = sensors[sensor_name]
-        
-        ok = True
-        serialbus = connect_serialbus()
-        device = SerialBusDevice(sensor["address"], serialbus, device_type = sensor_device)
-        ok &= device.set_value(sensor_device.HIGH_THRES, int(request.form["highThres"]))
-        ok &= device.set_value(sensor_device.LOW_THRES, int(request.form["lowThres"]))
-        ok &= device.set_value(sensor_device.MIN_IMPULSE_LENGTH, int(request.form["min_impulse_length"]))
-        ok &= device.set_value(sensor_device.MIN_IDLE_LENGTH, int(request.form["min_idle_length"]))
-        ok &= device.set_value(sensor_device.MAX_FAILS, int(request.form["max_fails"]))
-        ok &= device.set_value(sensor_device.HYSTERESE, int(request.form["hysteresis"]))
-        ok &= device.set_value(sensor_device.INTERVAL, int(request.form["interval"]))
-        if 'invert' in request.form:
-            ok &= device.set_value(sensor_device.INVERT, True)
-        else:
-            ok &= device.set_value(sensor_device.INVERT, False)
 
-        return jsonify(ok)
-    except:
-        raise
-    finally:
-        if serialbus is not None:
-            serialbus.close()
             
 
 @app.route('/sensor/_get_settings', methods=['GET'])
 def _get_sensor_settings():
     sensor_name = request.args["sensor"]
     sensor = sensors[sensor_name]
-    return jsonify(get_settings(sensor))
+    return jsonify(get_sensor_settings(sensor))
 
 
 def get_meter_reading(sensor):
@@ -358,7 +359,7 @@ def save_meter_reading():
             pass
         
     else:
-        flash('Keinen Zählerstand angegeben!', 'info')
+        flash('Keinen ZÃ¤hlerstand angegeben!', 'info')
         
     return redirect('/meters/meter_reading?sensor=' + sensor)
 
@@ -730,11 +731,6 @@ def to_google_charts_json(entries):
     #gjson['rows'] = [{'c':[{'v':'a'}, {'v':6}]}, {'c':[{'v':'b'}, {'v': 4}]}]
     return jsonify(gjson)
 
-
-
-
-
-
 @app.route('/')
 def home_page():
     sensor_rows = []
@@ -779,20 +775,14 @@ def settings():
     return render_template('settings.html', settings_serialbus = get_serialbus_settings(), settings_general = settings_general, locales = Locale("de_DE").time_formats['short'])
 
 @app.route('/attribution')
-def attribution():
-    
+def attribution():    
     return render_template('attribution.html')
 
-
-
-                
-                
 def get_serialbus_settings():
     settings = {}
     settings["serialbus_host"] = config.get("SERIALBUS", "SERIALBUS_HOST")
     settings["serialbus_port"] = config.getint("SERIALBUS", "SERIALBUS_PORT")
     return settings
-    
     
 def get_database_settings():
     settings = {}
@@ -802,8 +792,6 @@ def get_database_settings():
 @app.route('/sensors/_get_sensors')
 def _get_sensors():
     return jsonify(sensors)
-
-
 
 @socketio.on('discover_addresses')
 def discover_sensors_socketsio(message):
@@ -1188,7 +1176,7 @@ def close_db(error):
 #         sensor_name = request.args["sensor"]
 #         sensor = sensors[sensor_name]
 #         if sensor is not None:
-#             settings = get_settings(sensor)
+#             settings = get_sensor_settings(sensor)
 #         
 #             return render_template('wassersensor.html', settings = settings, sensor = sensor)
 #     
@@ -1233,12 +1221,12 @@ def close_db(error):
 #             cur = db.execute("INSERT INTO zaehlerstaende_wasser (timestamp, stand, anmerkung) VALUES (strftime('%s', 'now'), ?, ?)", (zaehlerstand, anmerkung))
 #             db.commit()
 #             db.close()
-#             flash('Neuen Zählerstand hinzugefügt!', 'success')
+#             flash('Neuen ZÃ¤hlerstand hinzugefÃ¼gt!', 'success')
 #         except:
-#             flash('Fehler beim einfügen', 'danger')
+#             flash('Fehler beim einfÃ¼gen', 'danger')
 #         
 #     else:
-#         flash('Keinen Zählerstand angegeben!', 'info')
+#         flash('Keinen ZÃ¤hlerstand angegeben!', 'info')
 #         
 #     return redirect('/water/zaehlerstand')
 # 
@@ -1573,12 +1561,12 @@ def close_db(error):
 #             cur = db.execute("INSERT INTO gas_meter_readings (timestamp, reading, note) VALUES (strftime('%s', 'now'), ?, ?)", (zaehlerstand, anmerkung))
 #             db.commit()
 #             db.close()
-#             flash('Neuen Zählerstand hinzugefügt!', 'success')
+#             flash('Neuen ZÃ¤hlerstand hinzugefÃ¼gt!', 'success')
 #         except:
-#             flash('Fehler beim einfügen', 'danger')
+#             flash('Fehler beim einfÃ¼gen', 'danger')
 #         
 #     else:
-#         flash('Keinen Zählerstand angegeben!', 'info')
+#         flash('Keinen ZÃ¤hlerstand angegeben!', 'info')
 #         
 #     return redirect('/gas/meter_readings')
 # 
@@ -1767,7 +1755,7 @@ def close_db(error):
 #     
 #     gjson = {}
 #     
-#     gjson['cols'] = [{'label': 'Datum', 'type': 'string' }, {'label': 'x 0.01m³', 'type': 'number' }, {'type': 'string', "role": "tooltip", 'p': {'role': 'tooltip'}}]
+#     gjson['cols'] = [{'label': 'Datum', 'type': 'string' }, {'label': 'x 0.01mÂ³', 'type': 'number' }, {'type': 'string', "role": "tooltip", 'p': {'role': 'tooltip'}}]
 #     
 #     gjson['rows'] = []
 #     
@@ -1941,7 +1929,7 @@ def close_db(error):
 #     db = get_db()
 #     cur = db.execute("SELECT timestamp, count from consumptions where sensor = ? and timestamp between ? and ? ORDER BY timestamp", (sensors[sensor]["id"], from_date_time_utc.timestamp(), to_date_time_utc.timestamp()))
 # 
-#     gjson['cols'] = [{'label': 'Datum', 'type': 'string' }, {'label': 'x 0.01m³', 'type': 'number' }, {'type': 'string', "role": "tooltip", 'p': {'role': 'tooltip'}}]
+#     gjson['cols'] = [{'label': 'Datum', 'type': 'string' }, {'label': 'x 0.01mÂ³', 'type': 'number' }, {'type': 'string', "role": "tooltip", 'p': {'role': 'tooltip'}}]
 #     
 #     gjson['rows'] = []
 #     
@@ -2036,7 +2024,7 @@ def close_db(error):
 # 
 #     gjson = {}
 #     
-#     gjson['cols'] = [{'label': 'Datum', 'type': 'string' }, {'label': 'x 0.01m³', 'type': 'number' }, {'type': 'string', "role": "tooltip", 'p': {'role': 'tooltip'}}]
+#     gjson['cols'] = [{'label': 'Datum', 'type': 'string' }, {'label': 'x 0.01mÂ³', 'type': 'number' }, {'type': 'string', "role": "tooltip", 'p': {'role': 'tooltip'}}]
 #     
 #     gjson['rows'] = []
 #     
