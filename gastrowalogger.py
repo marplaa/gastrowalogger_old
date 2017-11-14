@@ -507,13 +507,19 @@ def calculate_chart():#+from_time, to_time):
     for row in data["rows"]:
         time_from = format_time(row["datetime_from"], locale=locale, format='short')
         time_to = format_time(row["datetime_to"], locale=locale, format='short')
-        date = format_date(row["datetime_from"], locale=locale, format='short')      
-        if resolution >= 86400:
-            x_label = date
-        else:
+        date = format_date(row["datetime_from"], locale=locale, format='short')  
+            
+        x_text = date + ' ' + gettext("from") + " " + time_from + ' ' + gettext("to") + ' ' + time_to
+        x_label = date
+        if resolution < 86400:
             x_label = time_from
+        elif resolution >= 2*86400:
+            # more than two days, show startdate and enddate of point
+            date_to = format_date(row["datetime_to"], locale=locale, format='short')     
+            x_text = date + ' ' + gettext("to") + ' ' + date_to + " " + gettext("from") + " " + time_from + ' ' + gettext("to") + ' ' + time_to
+        
         #date_time = datetime.datetime.fromtimestamp(int(row['timestamp'])).strftime('%H:%M:%S')
-        gjson['rows'].append({'c':[{'v': x_label, 'f' : date + ' ' + gettext("from") + " " + time_from + ' ' + gettext("to") + ' ' + time_to}, {'v': row['value']}]})
+        gjson['rows'].append({'c':[{'v': x_label, 'f' : x_text}, {'v': row['value']}]})
     
     #gjson['rows'] = [{'c':[{'v':'a'}, {'v':6}]}, {'c':[{'v':'b'}, {'v': 4}]}]
     return jsonify(gjson)
@@ -549,7 +555,8 @@ def calculate_csv():#+from_time, to_time):
     for row in data["rows"]:
         time_from = format_time(row["datetime_from"], locale=locale, format='short')
         time_to = format_time(row["datetime_to"], locale=locale, format='short')
-        date = format_date(row["datetime_from"], locale=locale, format='short')      
+        date = format_date(row["datetime_from"], locale=locale, format='short')
+            
 
         #date_time = datetime.datetime.fromtimestamp(int(row['timestamp'])).strftime('%H:%M:%S')
         csv += date + ';' + time_from + ";" + time_to + ';' + str(row['value']) + '\n'
