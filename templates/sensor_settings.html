@@ -14,7 +14,7 @@
 
 <div class="page-header">
 	<h3>
-		<span id="sensor_icon"></span> Calibrate sensor 
+		<span id="sensor_icon"></span> {{_("Sensor settings")}} 
 			<form style="display: inline" class="form-inline" method="get"
 				action="/sensor/sensor">
 
@@ -48,7 +48,17 @@ $("#sensor_icon").css("color", icon_mapping["{{sensor.type}}"]["color"]);
 				<h3 class="panel-title">Sensor Info</h3>
 			</div>
 			<div class="panel-body">
-				<table width="100%">
+				<table style="width: 100%">
+				    <tr>
+						<td><b>Alias</b>
+						<!-- Button trigger edit - modal -->
+						<button type="button" class="btn btn-default btn-xs pull-right" style="margin-right: 10px;" data-toggle="modal"
+							data-target="#newAliasModal"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span>{{_("edit")}}</button>
+						</td>
+						<td>{{ sensor.alias }} 
+						
+						</td>
+					</tr>
 					<tr>
 						<td><b>Label</b></td>
 						<td>{{ sensor.label }}</td>
@@ -260,7 +270,40 @@ $("#sensor_icon").css("color", icon_mapping["{{sensor.type}}"]["color"]);
 </div>
 
 
+<!-- Modal new alias-->
+<div class="modal fade" id="newAliasModal" tabindex="-1" role="dialog"
+	aria-labelledby="myModalLabel">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"
+					aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title" id="myModalLabel">{{_("New alias")}}</h4>
+			</div>
+			<div class="modal-body">
 
+				<form id="newAliasForm" method="post"
+					action="/sensor/rename">
+					<input type="hidden" name="sensor" value="{{ current_sensor }}">
+
+					<div class="form-group">
+						<label for="new_alias">{{_("New alias")}}:</label> <input type="text"
+							class="form-control" name="new_alias" id="new_alias" value="">
+					</div>
+
+				</form>
+
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">{{_("Close")}}</button>
+				<button type="button" class="btn btn-primary"
+					onclick="document.getElementById('newAliasForm').submit();">{{_("Save")}}</button>
+			</div>
+		</div>
+	</div>
+</div>
 
 
 

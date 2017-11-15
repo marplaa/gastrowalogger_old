@@ -111,15 +111,14 @@ def get_sensors():
     row = cur.fetchone()
     while row is not None:
         row.update({"status" : "active"})
-        sensors.update({row["label"] + ":" + str(row["id"]) :  row})
-
+        sensors.update({row["label"] + "-" + str(row["id"]) :  row})
         row = cur.fetchone()
         
     cur = db.execute("SELECT * FROM sensors WHERE id NOT IN (SELECT * FROM active)")
     row = cur.fetchone()
     while row is not None:
         row.update({"status" : "inactive"})
-        sensors.update({row["label"] + ":" + str(row["id"]) :  row})
+        sensors.update({row["label"] + "-" + str(row["id"]) :  row})
         row = cur.fetchone()
     
     
@@ -154,7 +153,7 @@ def sensor_settings():
             settings.update({"resolution" : config.getint(sensor["type"].upper(), "PLOTTING_RESOLUTION")})
             settings.update({"sensor" : sensor_name})
         
-            return render_template('sensor_settings.html', settings = settings, sensor = sensor)
+            return render_template('sensor_settings.html', settings = settings, sensor = sensor, current_sensor = sensor_name)
     
     except:
         flash("Error while retrieving data from device: ")
@@ -430,11 +429,6 @@ def meter_reading():
     return render_template('meter_readings.html', entries = entries, meter_reading = round(get_meter_reading(sensor), 5), price_per_unit = price_per_unit, current_sensor = sensor_name)
 
 
-
-
-
-
-
 @app.route('/charts', methods=['GET'])
 def plot_chart():
     
@@ -452,7 +446,30 @@ def plot_chart():
         
     return render_template('charts.html', current_sensor=sensor_name)
 
-
+@app.route('/sensor/rename', methods=['POST'])
+def _rename_sensor():
+    sensor_name = request.form["sensor"]
+    new_alias = request.form["new_alias"]
+    
+    if sensor_name not in sensors:
+        flash(gettext("Unknown sensor:") + " " + sensor_name, 'danger')
+        return redirect('/')
+    
+    try:
+        db = get_db()
+        cur = db.execute("UPDATE sensors SET alias = ? WHERE id = ?", (new_alias, sensors[sensor_name]["id"])) 
+        db.commit()
+        get_sensors()
+        flash(gettext("Alias successfully changed!"), "success")
+        return redirect('/sensor/sensor?sensor=' + sensor_name)
+    except Exception as e:
+        if hasattr(e, 'message'):
+            flash(gettext("Error while saving new alias for:") + " " + sensor_name + " - " + e.message, "danger")
+            return redirect('/sensor/sensor?sensor=' + sensor_name)
+        else:
+            flash(gettext("Error while saving new alias for:") + " " + sensor_name + " - " + str(e), "danger")
+            return redirect('/sensor/sensor?sensor=' + sensor_name)
+            
 
 def add_sensor_to_database(sensor):
     
@@ -525,7 +542,7 @@ def calculate_chart():#+from_time, to_time):
     return jsonify(gjson)
 
 @app.route('/charts/_get_csv', methods=['POST', 'GET'])
-def calculate_csv():#+from_time, to_time):
+def calculate_csv():
     
     sensor_name = request.args["sensor"]
     try:
@@ -720,23 +737,23 @@ def weather():
     
     return jsonify(gjson)
 
-def to_google_charts_json(entries):
-    
-    gjson = {}
-    
-    gjson['cols'] = [{'label': 'Datum', 'type': 'string' }, {'label': 'Liter', 'type': 'number' }]
-    
-    gjson['rows'] = []
-    
-    for row in entries:
-        time_from = format_time(datetime_from, locale=config.get("GASTROWALOGGER", "LOCALE"))
-        time_to = format_time(datetime_to, locale=config.get("GASTROWALOGGER", "LOCALE"))
-        date = format_date(datetime_from, locale=config.get("GASTROWALOGGER", "LOCALE"))      
-        #date_time = datetime.datetime.fromtimestamp(int(row['timestamp'])).strftime('%H:%M:%S')
-        gjson['rows'].append({'c':[{'v': row['datetime_from'] + row['datetime_to']}, {'v': row['verbrauch']}]})
-    
-    #gjson['rows'] = [{'c':[{'v':'a'}, {'v':6}]}, {'c':[{'v':'b'}, {'v': 4}]}]
-    return jsonify(gjson)
+# def to_google_charts_json(entries):
+#     
+#     gjson = {}
+#     
+#     gjson['cols'] = [{'label': 'Datum', 'type': 'string' }, {'label': 'Liter', 'type': 'number' }]
+#     
+#     gjson['rows'] = []
+#     
+#     for row in entries:
+#         time_from = format_time(datetime_from, locale=config.get("GASTROWALOGGER", "LOCALE"))
+#         time_to = format_time(datetime_to, locale=config.get("GASTROWALOGGER", "LOCALE"))
+#         date = format_date(datetime_from, locale=config.get("GASTROWALOGGER", "LOCALE"))      
+#         #date_time = datetime.datetime.fromtimestamp(int(row['timestamp'])).strftime('%H:%M:%S')
+#         gjson['rows'].append({'c':[{'v': row['datetime_from'] + row['datetime_to']}, {'v': row['verbrauch']}]})
+#     
+#     #gjson['rows'] = [{'c':[{'v':'a'}, {'v':6}]}, {'c':[{'v':'b'}, {'v': 4}]}]
+#     return jsonify(gjson)
 
 @app.route('/')
 def home_page():
@@ -814,7 +831,7 @@ def discover_sensors_socketsio(message):
         addresses_list = addresses_str.split(',')
         addresses = list(map(int, addresses_list))
     else:
-        addresses = list(range(1,31))
+        addresses = list(range(1,30))
         
     i = 0
     for address in addresses:
@@ -824,7 +841,7 @@ def discover_sensors_socketsio(message):
         device = SerialBusDevice(address, serialbus)
         sensor_conf = device.get_config(timeout = 1000)
         if sensor_conf:
-            if sensor_conf["label"] + ":" + sensor_conf["id"] not in sensors:
+            if sensor_conf["label"] + "-" + sensor_conf["id"] not in sensors:
                 sensor_conf.update({"address" : address})
                 sensor_conf.update({"alias" : sensor_conf["label"] + "@" + str(address)})
                 sensor_conf.update({"status" : "inactive"})
@@ -838,8 +855,8 @@ def discover_sensors_socketsio(message):
                     #Gas sensor
                     sensor_conf.update({"type" : "power"})
                 
-                sensors.update({sensor_conf["label"] + ":" + sensor_conf["id"] :  sensor_conf})
-                add_sensor_to_database(sensor_conf["label"] + ":" + sensor_conf["id"])
+                sensors.update({sensor_conf["label"] + "-" + sensor_conf["id"] :  sensor_conf})
+                add_sensor_to_database(sensor_conf["label"] + "-" + sensor_conf["id"])
                 emit("discovered", sensors, json=True)
         serialbus.close()
         i += 1
