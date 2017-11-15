@@ -3,7 +3,7 @@ var _data = [];
 var highThresArray = [];
 var lowThresArray = [];
 var running = false;
-var ctx = document.getElementById("myChart");
+var ctx = document.getElementById("myChart").getContext('2d');
 var myChart;
 var impulseCount = 0;
 var resolution = 30;
@@ -55,7 +55,8 @@ function _init(settings) {
 				fill: false,
 				borderColor: "#444",
 				pointBackgroundColor: "#999",
-				pointBorderColor:"#444"
+				pointBorderColor:"#444",
+			    lineTension: 0
 			},
 			{
 				label: 'highThres',
@@ -93,9 +94,9 @@ function _init(settings) {
 			tooltips: {
 				enabled: false
 			},
-			legend: [{
+			legend: {
 				display: false
-			}]
+			}
 		}
 	})
 	

@@ -1,6 +1,4 @@
-/*google.charts.load('current', {
-	packages : [ 'corechart', 'bar' ]
-});*/
+
 
 google.charts.load('current', {
 	'packages' : [ 'bar' ]
@@ -32,6 +30,9 @@ var material;
 function drawChart() {
 
 	material = new google.charts.Bar(document.getElementById('chart_div'));
+	// Listen for the 'select' event, and call my function selectHandler() when
+	// the user selects something on the chart.
+	google.visualization.events.addListener(material, 'select', selectHandler);
 
 	$.ajax({
 		type : 'POST',
@@ -66,6 +67,16 @@ function newData(jsonData) {
 	}
 
 }
+
+// The select handler. Call the chart's getSelection() method
+function selectHandler() {
+  var selectedItem = material.getSelection()[0];
+  if (selectedItem) {
+    var value = data.getValue(selectedItem.row, 0);
+    alert('The user selected ' + value);
+  }
+}
+
 
 
 

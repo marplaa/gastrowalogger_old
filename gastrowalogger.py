@@ -495,7 +495,7 @@ def calculate_chart():#+from_time, to_time):
         sensor = get_sensor_by_name(sensor_name)
     except NoSuchSensorError():
         #flash(gettext('No such Sensor:') + " " + sensor_name, 'danger')
-        return jsonify({"status" : "error", "error_msg" : gettext('No such Sensor:') + " " + sensor_name})
+        return jsonify({"status" : "error", "error_msg" : gettext('No such Sensor') + ": " + sensor_name})
         
 
     resolution = int(request.form["resolution"])
@@ -513,7 +513,10 @@ def calculate_chart():#+from_time, to_time):
     
     gjson = {}
     
-    gjson['cols'] = [{'label': 'Datum', 'type': 'string' }, {'label': 'Liter', 'type': 'number' }]
+    gjson['cols'] = [{'label': gettext("date"), 'type': 'string' }, 
+                     {'label': "x" + str(config.getfloat(sensor["type"].upper(),"UNITS_PER_IMPULSE")) + " " + config.get(sensor["type"].upper(), "UNIT_STRING"), 'type': 'number' },
+                     {"type": "string", "p" : { "role" : "style" } }
+                     ]
     
     gjson['rows'] = []
     
@@ -532,11 +535,14 @@ def calculate_chart():#+from_time, to_time):
             x_label = time_from
         elif resolution >= 2*86400:
             # more than two days, show startdate and enddate of point
-            date_to = format_date(row["datetime_to"], locale=locale, format='short')     
-            x_text = date + ' ' + gettext("to") + ' ' + date_to + " " + gettext("from") + " " + time_from + ' ' + gettext("to") + ' ' + time_to
+            date_to = format_date(row["datetime_to"], locale=locale, format='short')
+            x_text = date + ' ' + gettext("to") + ' ' + date_to
         
         #date_time = datetime.datetime.fromtimestamp(int(row['timestamp'])).strftime('%H:%M:%S')
-        gjson['rows'].append({'c':[{'v': x_label, 'f' : x_text}, {'v': row['value']}]})
+        gjson['rows'].append({'c':[{'v': x_label, 'f' : x_text},
+                                   {'v': row['value']}, 
+                                   {'v': "fill-color: #FF3"}
+                                   ]})
     
     #gjson['rows'] = [{'c':[{'v':'a'}, {'v':6}]}, {'c':[{'v':'b'}, {'v': 4}]}]
     return jsonify(gjson)
