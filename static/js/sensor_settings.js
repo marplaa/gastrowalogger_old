@@ -113,7 +113,7 @@ function populate_fields(settings) {
 	$("#hysteresisInput").val(settings["hysteresis"]);
 	$("#hysteresisInputAuto").val(settings["hysteresis"]);
 	$("#highThresInput").val(settings["highThres"]);
-	$("#invert").prop( "checked", settings["invert"]);
+	$("#invert").prop("checked", settings["invert"]);
 	$("#minIdleLengthInput").val(settings["min_idle_length"]);
 	$("#minImpulseLengthInput").val(settings["min_impulse_length"]);
 	$("#intervalInput").val(settings["interval"]);
@@ -130,7 +130,6 @@ function loadDefaults() {
 
 function loadSettings() {
 	$.getJSON($SCRIPT_ROOT + '/sensor/_get_settings?sensor=' + sensor, setSettings);
-	
 }
 
 function new_data(data) {
@@ -159,10 +158,10 @@ function new_data(data) {
 	} 
 }
 
-function new_thresholds(data) {
-	set_thresholds(data["lowThres"], data["highThres"]);
-	myChart.update();
-}
+//function new_thresholds(data) {
+//	set_thresholds(data["lowThres"], data["highThres"]);
+//	myChart.update();
+//}
 
 function request_Data() {
 	$.getJSON($SCRIPT_ROOT + '/sensor/_get_calibration_data?sensor=' + sensor, new_data);

@@ -487,8 +487,8 @@ def add_sensor_to_database(sensor):
 
 
 
-@app.route('/charts/_get_chart', methods=['POST', 'GET'])
-def calculate_chart():#+from_time, to_time):
+@app.route('/charts/_get_chart_old2', methods=['POST', 'GET'])
+def calculate_chart_old2():#+from_time, to_time):
     
     sensor_name = request.args["sensor"]
     try:
@@ -543,6 +543,60 @@ def calculate_chart():#+from_time, to_time):
                                    {'v': row['value']}, 
                                    {'v': "fill-color: #FF3"}
                                    ]})
+    
+    #gjson['rows'] = [{'c':[{'v':'a'}, {'v':6}]}, {'c':[{'v':'b'}, {'v': 4}]}]
+    return jsonify(gjson)
+
+@app.route('/charts/_get_chart', methods=['POST', 'GET'])
+def calculate_chart():#+from_time, to_time):
+    
+    sensor_name = request.args["sensor"]
+    try:
+        sensor = get_sensor_by_name(sensor_name)
+    except NoSuchSensorError():
+        #flash(gettext('No such Sensor:') + " " + sensor_name, 'danger')
+        return jsonify({"status" : "error", "error_msg" : gettext('No such Sensor') + ": " + sensor_name})
+        
+
+    resolution = int(request.form["resolution"])
+    locale = config.get("GASTROWALOGGER", "LOCALE")
+
+    from_date = parse_date(request.form["from_date"], locale=locale)
+    from_time = parse_time(request.form["from_time"]+":00", locale=locale)
+    from_date_time = datetime.combine(from_date, from_time)
+    
+    to_date = parse_date(request.form["to_date"], locale=locale)
+    to_time = parse_time(request.form["to_time"]+":00", locale=locale)
+    to_date_time = datetime.combine(to_date, to_time)
+    
+    data = get_data(sensor, from_date_time, to_date_time, resolution, locale)
+    
+    gjson = {}
+    
+    gjson['labels'] = []
+    gjson['data'] = []
+    
+    gjson['sensor'] = sensor
+    
+    gjson['status'] = "ok"
+    
+    for row in data["rows"]:
+        time_from = format_time(row["datetime_from"], locale=locale, format='short')
+        time_to = format_time(row["datetime_to"], locale=locale, format='short')
+        date = format_date(row["datetime_from"], locale=locale, format='short')  
+            
+        x_text = date + ' ' + gettext("from") + " " + time_from + ' ' + gettext("to") + ' ' + time_to
+        x_label = date
+        if resolution < 86400:
+            x_label = time_from
+        elif resolution >= 2*86400:
+            # more than two days, show startdate and enddate of point
+            date_to = format_date(row["datetime_to"], locale=locale, format='short')
+            x_text = date + ' ' + gettext("to") + ' ' + date_to
+        
+        #date_time = datetime.datetime.fromtimestamp(int(row['timestamp'])).strftime('%H:%M:%S')
+        gjson["labels"].append(x_label)
+        gjson["data"].append(row['value'])
     
     #gjson['rows'] = [{'c':[{'v':'a'}, {'v':6}]}, {'c':[{'v':'b'}, {'v': 4}]}]
     return jsonify(gjson)
