@@ -6,15 +6,14 @@
 <script type=text/javascript
 	src="{{url_for('static', filename='js/date-de-DE.js') }}"></script>
 
-
+<script
+	src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
 
 
 <link href="{{url_for('static', filename='css/jquery-ui.min.css') }}"
 	rel="stylesheet">
 
 
-<script type="text/javascript"
-	src="https://www.gstatic.com/charts/loader.js"></script>
 
 <!-- ab hier test -->
 
@@ -47,9 +46,9 @@
 
 				<tr>
 					<td>
-						<div id="{{ sensors[sensor].id }}_chart_div"
-							style="position: relative; width: 100%; left: 0; top: 0;"
-							height="300px"></div>
+						<div style="position: relative; width: 100%; left: 0; top: 0; height:300px">
+						<canvas id="{{ sensors[sensor].id }}_chart_div"></canvas>
+						</div>
 
 					</td>
 				</tr>
