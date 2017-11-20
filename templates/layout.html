@@ -42,11 +42,26 @@
 	src="{{url_for('static', filename='js/constants.js') }}"></script>
 	
 <script type="text/javascript">
-	var sensors = {{sensors|tojson}};
+	var sensors = {{config.sensors|tojson}};
 	
 	{% if sensor is defined %}
 	    var sensor = "{{ sensor }}";
     {% endif %}
+    
+    var icon_mapping = {
+    		water : {
+    			icon : "raindrop",
+    			color : "{{config.colors['water']}}"
+    		},
+    		gas : {
+    			icon : "flame",
+    			color : "{{config.colors['gas']}}"
+    		},
+    		power : {
+    			icon : "flash",
+    			color : "{{config.colors['power']}}"
+    		},
+    	};
 	
 </script>
 <!-- 
