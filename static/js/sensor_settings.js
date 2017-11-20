@@ -133,7 +133,7 @@ function loadSettings() {
 }
 
 function new_data(data) {
-	if (data != -1 && running) {
+	if (data["status"] == "ok" && running) {
 		_data.shift();
 		_data.push(data["value"]);
 		myChart.update();
@@ -147,12 +147,11 @@ function new_data(data) {
 			$("#impulsesBadge").effect( "highlight", {color:"#F55"}, 1000 );
 		}
 		impulseCount = data["count"];
-		
 		setTimeout(request_Data, 60);
 	} else if (running) {
 		timer.pause();
-		alert("Keine Daten empfangen");
 		running = false;
+		alertPopup(data.msg, "");
 		$("#button1").text("Start");
 		$('#button1').toggleClass('btn-danger btn-success');
 	} 
