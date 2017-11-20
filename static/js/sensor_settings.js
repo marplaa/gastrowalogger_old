@@ -29,7 +29,7 @@ function sendSettings() {
         type: 'POST',
         url: $SCRIPT_ROOT + '/sensor/_set_settings',
         data: $( "#settingsForm" ).serialize(),
-        success: function(response) {loadSettings(); if(response) {alertPopup("Werte erfolgreich gespeichert!", "Erfolg")} else {alertPopup("Fehler beim Speichern!", "Fehler")}},
+        success: function(response) {loadSettings(); alertPopup(response.msg, "")},
     });
 }
 
@@ -113,7 +113,7 @@ function populate_fields(settings) {
 	$("#hysteresisInput").val(settings["hysteresis"]);
 	$("#hysteresisInputAuto").val(settings["hysteresis"]);
 	$("#highThresInput").val(settings["highThres"]);
-	$("#invert").prop( "checked", settings["invert"]);
+	$("#invert").prop("checked", settings["invert"]);
 	$("#minIdleLengthInput").val(settings["min_idle_length"]);
 	$("#minImpulseLengthInput").val(settings["min_impulse_length"]);
 	$("#intervalInput").val(settings["interval"]);
@@ -130,7 +130,6 @@ function loadDefaults() {
 
 function loadSettings() {
 	$.getJSON($SCRIPT_ROOT + '/sensor/_get_settings?sensor=' + sensor, setSettings);
-	
 }
 
 function new_data(data) {
@@ -157,11 +156,6 @@ function new_data(data) {
 		$("#button1").text("Start");
 		$('#button1').toggleClass('btn-danger btn-success');
 	} 
-}
-
-function new_thresholds(data) {
-	set_thresholds(data["lowThres"], data["highThres"]);
-	myChart.update();
 }
 
 function request_Data() {

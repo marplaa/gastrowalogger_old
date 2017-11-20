@@ -111,6 +111,8 @@ def get_sensors():
     row = cur.fetchone()
     while row is not None:
         row.update({"status" : "active"})
+        row.update({"unit" : config.get(row["type"].upper(), "UNITS_PER_IMPULSE")})
+        row.update({"unit_string" : config.get(row["type"].upper(), "UNIT_STRING")})
         sensors.update({row["label"] + "-" + str(row["id"]) :  row})
         row = cur.fetchone()
         
@@ -126,7 +128,13 @@ app.before_first_request(get_sensors)
 
 @app.context_processor
 def inject_dict_for_all_templates():
-    return dict(sensors=sensors)
+    colors = {"water" : config.get("WATER", "COLOR"),
+              "gas" : config.get("GAS", "COLOR"),
+              "power" : config.get("POWER", "COLOR"),
+        }
+    _config = {"sensors" : sensors,
+               "colors" : colors}
+    return dict(config=_config)
         
 #except:
     #pass
@@ -213,9 +221,14 @@ def set_sensor_settings():
             ok &= device.set_value(sensor_device.INVERT, True)
         else:
             ok &= device.set_value(sensor_device.INVERT, False)
+        
+        if ok:
+            return jsonify({"status":"ok", "msg" : gettext("Sensor settings successfully updated!")})
+        else:
+            return jsonify({"status":"error", "msg" : gettext("Error while saving sensor settings!")})
 
-        return jsonify(ok)
-    except:
+    except :
+        
         raise
     finally:
         if serialbus is not None:
@@ -483,8 +496,6 @@ def add_sensor_to_database(sensor):
     db = get_db()
     cur = db.execute("INSERT INTO sensors (label, id, type, vendor, author, description, alias, email, address, version)  VALUES (?, ?, ? ,? ,? ,?, ?, ?, ?, ?)", values) 
     db.commit()
-    
-
 
 
 @app.route('/charts/_get_chart', methods=['POST', 'GET'])
@@ -513,18 +524,23 @@ def calculate_chart():#+from_time, to_time):
     
     gjson = {}
     
-    gjson['cols'] = [{'label': gettext("date"), 'type': 'string' }, 
-                     {'label': "x" + str(config.getfloat(sensor["type"].upper(),"UNITS_PER_IMPULSE")) + " " + config.get(sensor["type"].upper(), "UNIT_STRING"), 'type': 'number' },
-                     {"type": "string", "p" : { "role" : "style" } }
-                     ]
-    
-    gjson['rows'] = []
+    gjson['labels'] = []
+    gjson['data'] = []
+    gjson['long_labels'] = []
+    gjson['notes'] = []
+    gjson['bg'] = []
     
     gjson['sensor'] = sensor
     
     gjson['status'] = "ok"
     
+    gjson["unit"] = "x" + str(config.getfloat(sensor["type"].upper(),"UNITS_PER_IMPULSE")) + " " + config.get(sensor["type"].upper(),"UNIT_STRING")
+    gjson["heading"] = sensor["type"][0].upper() + sensor["type"][1:] + gettext(" consumption of the last 7 days")
+    
+    
     for row in data["rows"]:
+        notes = []
+        bg = ""
         time_from = format_time(row["datetime_from"], locale=locale, format='short')
         time_to = format_time(row["datetime_to"], locale=locale, format='short')
         date = format_date(row["datetime_from"], locale=locale, format='short')  
@@ -538,13 +554,29 @@ def calculate_chart():#+from_time, to_time):
             date_to = format_date(row["datetime_to"], locale=locale, format='short')
             x_text = date + ' ' + gettext("to") + ' ' + date_to
         
+        hasNote = False
+        
+        if len(row['notes']) > 0:
+            hasNote = True
+        
+        for note in row['notes']:
+            notes.append(format_date(note["datetime"], locale=locale, format='short')  + ": " + note['note'])
+            
+            
         #date_time = datetime.datetime.fromtimestamp(int(row['timestamp'])).strftime('%H:%M:%S')
-        gjson['rows'].append({'c':[{'v': x_label, 'f' : x_text},
-                                   {'v': row['value']}, 
-                                   {'v': "fill-color: #FF3"}
-                                   ]})
+        gjson["labels"].append(x_label)
+        gjson["long_labels"].append(x_text)
+        gjson["data"].append(row['value'])
+        gjson["notes"].append(notes)
+        if hasNote:
+            gjson["bg"].append("#222")
+        else:
+            gjson["bg"].append(config.get(sensor["type"].upper(),"COLOR"))
+        
     
     #gjson['rows'] = [{'c':[{'v':'a'}, {'v':6}]}, {'c':[{'v':'b'}, {'v': 4}]}]
+    
+    
     return jsonify(gjson)
 
 @app.route('/charts/_get_csv', methods=['POST', 'GET'])
@@ -571,7 +603,7 @@ def calculate_csv():
     
     data = get_data(sensor, from_date_time, to_date_time, resolution, locale)
     
-    csv = gettext("date") + ";" + gettext("from") + ";" + gettext("to") + ";x"  + str(config.getfloat(sensor["type"].upper(),"UNITS_PER_IMPULSE")) + " " + config.get(sensor["type"].upper(),"UNIT_STRING") + "\n"
+    csv = gettext("date") + ";" + gettext("from") + ";" + gettext("to") + ";x"  + str(config.getfloat(sensor["type"].upper(),"UNITS_PER_IMPULSE")) + " " + config.get(sensor["type"].upper(),"UNIT_STRING") + ";" + gettext("note") + "\n"
     
     filename = sensor["type"] + "_consumption_" + request.form["from_date"] + "-" +  request.form["to_date"]
     
@@ -579,10 +611,16 @@ def calculate_csv():
         time_from = format_time(row["datetime_from"], locale=locale, format='short')
         time_to = format_time(row["datetime_to"], locale=locale, format='short')
         date = format_date(row["datetime_from"], locale=locale, format='short')
+        
+        notes = ""
+        
+        if len(row["notes"]) > 0:
+            for note in row["notes"]:
+                notes += format_date(note["datetime"], locale=locale, format='short') + ": " + note["note"] + " - "
+            notes = notes[:-3]
             
-
         #date_time = datetime.datetime.fromtimestamp(int(row['timestamp'])).strftime('%H:%M:%S')
-        csv += date + ';' + time_from + ";" + time_to + ';' + str(row['value']) + '\n'
+        csv += date + ';' + time_from + ";" + time_to + ';' + str(row['value']) + ";" + notes + '\n'
     
     response = make_response(csv)
     # This is the key: Set the right header for the response
@@ -611,9 +649,9 @@ def get_data(sensor, from_date_time, to_date_time, resolution, locale):
     
     db = get_db()
     
-    cur = db.execute("SELECT timestamp, count from consumptions where sensor = ? and timestamp between ? and ? ORDER BY timestamp", (sensor["id"], from_date_time_utc.timestamp(), to_date_time_utc.timestamp()))
+    cur = db.execute("SELECT timestamp, count, note from consumptions LEFT JOIN notes ON consumptions.id = notes.consumption where sensor = ? and timestamp between ? and ? ORDER BY timestamp", (sensor["id"], from_date_time_utc.timestamp(), to_date_time_utc.timestamp()))
 
-    data['columns'] = ["from_datetime", "to_datetime", "values"]
+    data['columns'] = ["from_datetime", "to_datetime", "values", "notes"]
     
     data['rows'] = []
     
@@ -651,12 +689,15 @@ def get_data(sensor, from_date_time, to_date_time, resolution, locale):
             
             #### mit timedelta oderso, sonst gehts nicht mit daylightsaving -.-
             sumcount = 0
+            notes = []
             datetime_from = until - timedelta(seconds = resolution)
             datetime_to = until - timedelta(seconds = 1)
 
             if (current_date < until):
                 while current_date < datetime_to:
                     sumcount += row['count']
+                    if row['note'] is not None:
+                        notes.append({"datetime" : current_date, "note" : row['note']})
                     row = cur.fetchone()
                     if (row == None):
                         end_of_data = True
@@ -665,7 +706,7 @@ def get_data(sensor, from_date_time, to_date_time, resolution, locale):
                     
             #print(datetime.utcfromtimestamp(datetime_to), date, datetime.utcfromtimestamp(current_date))
                 
-            data['rows'].append({"datetime_from" : datetime_from, "datetime_to" : datetime_to, "value" : sumcount})
+            data['rows'].append({"datetime_from" : datetime_from, "datetime_to" : datetime_to, "value" : sumcount, "notes" : notes})
         
         
         until += timedelta(seconds = resolution)
@@ -2122,3 +2163,63 @@ def close_db(error):
 #     # to be downloaded, instead of just printed on the browser
 #     response.headers["Content-Disposition"] = "attachment; filename=" + filename + ".csv"
 #     return response
+
+# @app.route('/charts/_get_chart_old2', methods=['POST', 'GET'])
+# def calculate_chart_old2():#+from_time, to_time):
+#     
+#     sensor_name = request.args["sensor"]
+#     try:
+#         sensor = get_sensor_by_name(sensor_name)
+#     except NoSuchSensorError():
+#         #flash(gettext('No such Sensor:') + " " + sensor_name, 'danger')
+#         return jsonify({"status" : "error", "error_msg" : gettext('No such Sensor') + ": " + sensor_name})
+#         
+# 
+#     resolution = int(request.form["resolution"])
+#     locale = config.get("GASTROWALOGGER", "LOCALE")
+# 
+#     from_date = parse_date(request.form["from_date"], locale=locale)
+#     from_time = parse_time(request.form["from_time"]+":00", locale=locale)
+#     from_date_time = datetime.combine(from_date, from_time)
+#     
+#     to_date = parse_date(request.form["to_date"], locale=locale)
+#     to_time = parse_time(request.form["to_time"]+":00", locale=locale)
+#     to_date_time = datetime.combine(to_date, to_time)
+#     
+#     data = get_data(sensor, from_date_time, to_date_time, resolution, locale)
+#     
+#     gjson = {}
+#     
+#     gjson['cols'] = [{'label': gettext("date"), 'type': 'string' }, 
+#                      {'label': "x" + str(config.getfloat(sensor["type"].upper(),"UNITS_PER_IMPULSE")) + " " + config.get(sensor["type"].upper(), "UNIT_STRING"), 'type': 'number' },
+#                      {"type": "string", "p" : { "role" : "style" } }
+#                      ]
+#     
+#     gjson['rows'] = []
+#     
+#     gjson['sensor'] = sensor
+#     
+#     gjson['status'] = "ok"
+#     
+#     for row in data["rows"]:
+#         time_from = format_time(row["datetime_from"], locale=locale, format='short')
+#         time_to = format_time(row["datetime_to"], locale=locale, format='short')
+#         date = format_date(row["datetime_from"], locale=locale, format='short')  
+#             
+#         x_text = date + ' ' + gettext("from") + " " + time_from + ' ' + gettext("to") + ' ' + time_to
+#         x_label = date
+#         if resolution < 86400:
+#             x_label = time_from
+#         elif resolution >= 2*86400:
+#             # more than two days, show startdate and enddate of point
+#             date_to = format_date(row["datetime_to"], locale=locale, format='short')
+#             x_text = date + ' ' + gettext("to") + ' ' + date_to
+#         
+#         #date_time = datetime.datetime.fromtimestamp(int(row['timestamp'])).strftime('%H:%M:%S')
+#         gjson['rows'].append({'c':[{'v': x_label, 'f' : x_text},
+#                                    {'v': row['value']}, 
+#                                    {'v': "fill-color: #FF3"}
+#                                    ]})
+#     
+#     #gjson['rows'] = [{'c':[{'v':'a'}, {'v':6}]}, {'c':[{'v':'b'}, {'v': 4}]}]
+#     return jsonify(gjson)

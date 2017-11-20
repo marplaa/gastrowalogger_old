@@ -1,17 +1,17 @@
-var icon_mapping = {
-	water : {
-		icon : "raindrop",
-		color : "#0099ff"
-	},
-	gas : {
-		icon : "flame",
-		color : "#ff6600"
-	},
-	power : {
-		icon : "flash",
-		color : "#ffcc00"
-	},
-};
+//var icon_mapping = {
+//	water : {
+//		icon : "raindrop",
+//		color : "#0099ff"
+//	},
+//	gas : {
+//		icon : "flame",
+//		color : "#ff6600"
+//	},
+//	power : {
+//		icon : "flash",
+//		color : "#ffcc00"
+//	},
+//};
 
 
 function alertPopupColor(message, heading, color) {
