@@ -227,8 +227,8 @@ def set_sensor_settings():
         else:
             return jsonify({"status":"error", "msg" : gettext("Error while saving sensor settings!")})
 
-
-    except:
+    except :
+        
         raise
     finally:
         if serialbus is not None:
@@ -569,7 +569,7 @@ def calculate_chart():#+from_time, to_time):
         gjson["data"].append(row['value'])
         gjson["notes"].append(notes)
         if hasNote:
-            gjson["bg"].append("#0FF")
+            gjson["bg"].append("#222")
         else:
             gjson["bg"].append(config.get(sensor["type"].upper(),"COLOR"))
         

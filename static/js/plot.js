@@ -37,7 +37,7 @@ function drawChart(jsonData) {
 			long_labels : jsonData["long_labels"],
 			notes : jsonData["notes"],
 			datasets : [ {
-				label : "My First dataset",
+				label : "dataset",
 				borderColor : jsonData["bg"],
 				backgroundColor : icon_mapping[sensors[sensor].type]["color"],
 				borderWidth: 3,
@@ -63,7 +63,7 @@ function drawChart(jsonData) {
 						return (data.long_labels[tooltipItem[0].index]);
 					},
 					label : function(tooltipItem, data) {
-						return (" " + tooltipItem.yLabel + data.unit);
+						return (" " + tooltipItem.yLabel + " " + data.unit);
 					},
 					afterBody : function(tooltipItem, data) {
 						return (data.notes[tooltipItem[0].index]);
