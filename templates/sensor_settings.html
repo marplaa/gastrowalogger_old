@@ -19,10 +19,10 @@
 				action="/sensor/sensor">
 
 				<select name="sensor" class="form-control" id="sensor"
-					onchange="this.form.submit()"> {% for _sensor in sensors %}
-					{% if sensors[_sensor].type == sensor.type and sensors[_sensor].status == "active" %}
+					onchange="this.form.submit()"> {% for _sensor in config.sensors %}
+					{% if config.sensors[_sensor].type == sensor.type and config.sensors[_sensor].status == "active" %}
 
-					<option {%if _sensor == sensor %}selected{% endif %} value="{{_sensor}}">{{sensors[_sensor].alias}}</option>
+					<option {%if _sensor == sensor %}selected{% endif %} value="{{_sensor}}">{{config.sensors[_sensor].alias}}</option>
 					{% endif %} {% endfor %}
 				</select>
 			</form>

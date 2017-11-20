@@ -29,7 +29,7 @@ function sendSettings() {
         type: 'POST',
         url: $SCRIPT_ROOT + '/sensor/_set_settings',
         data: $( "#settingsForm" ).serialize(),
-        success: function(response) {loadSettings(); if(response) {alertPopup("Werte erfolgreich gespeichert!", "Erfolg")} else {alertPopup("Fehler beim Speichern!", "Fehler")}},
+        success: function(response) {loadSettings(); alertPopup(response.msg, "")},
     });
 }
 
@@ -157,11 +157,6 @@ function new_data(data) {
 		$('#button1').toggleClass('btn-danger btn-success');
 	} 
 }
-
-//function new_thresholds(data) {
-//	set_thresholds(data["lowThres"], data["highThres"]);
-//	myChart.update();
-//}
 
 function request_Data() {
 	$.getJSON($SCRIPT_ROOT + '/sensor/_get_calibration_data?sensor=' + sensor, new_data);

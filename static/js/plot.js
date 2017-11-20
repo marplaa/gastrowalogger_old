@@ -19,10 +19,12 @@ var labels;
 var data;
 var ctx = document.getElementById('myChart').getContext('2d');
 
+
 function drawChart(jsonData) {
 
 	data = jsonData["data"];
 	labels = jsonData["labels"];
+
 
 	chart = new Chart(ctx, {
 		// The type of chart we want to create
@@ -31,10 +33,14 @@ function drawChart(jsonData) {
 		// The data for our dataset
 		data : {
 			labels : labels,
+			unit : jsonData["unit"],
+			long_labels : jsonData["long_labels"],
+			notes : jsonData["notes"],
 			datasets : [ {
 				label : "My First dataset",
+				borderColor : jsonData["bg"],
 				backgroundColor : icon_mapping[sensors[sensor].type]["color"],
-				borderColor : icon_mapping[sensors[sensor].type]["color"],
+				borderWidth: 3,
 				data : data,
 			} ]
 		},
@@ -51,12 +57,18 @@ function drawChart(jsonData) {
 					}
 				} ]
 			},
-			tooltips: {
-	            callbacks: {
-	            	afterFooter : function(tooltipItem, chart) {
-	            		return("<br><br>" + tooltipItem[0].xLabel);
-	            	}
-	            }
+			tooltips : {
+				callbacks : {
+					title : function(tooltipItem, data) {
+						return (data.long_labels[tooltipItem[0].index]);
+					},
+					label : function(tooltipItem, data) {
+						return (" " + tooltipItem.yLabel + data.unit);
+					},
+					afterBody : function(tooltipItem, data) {
+						return (data.notes[tooltipItem[0].index]);
+					}
+				}
 			}
 		}
 	});
@@ -84,6 +96,7 @@ function newData(jsonData) {
 	if (jsonData["status"] == "ok") {
 
 		chart.data.datasets[0].data = jsonData["data"];
+		chart.data.long_labels = jsonData["long_labels"]
 		chart.data.labels = jsonData["labels"];
 		chart.update();
 		// Instantiate and draw our chart, passing in some options.

@@ -17,7 +17,7 @@
 
 
 <link
-	href="{{url_for('static', filename='css/loading/' + sensors[current_sensor].type + '.css') }}"
+	href="{{url_for('static', filename='css/loading/' + config.sensors[current_sensor].type + '.css') }}"
 	rel="stylesheet">
 
 
@@ -33,7 +33,6 @@
 	
 
 </script>
-
 
 <script>
 
@@ -70,12 +69,12 @@ function quickSelect() {
 		<form class="form" method="get" action="/charts">
 
 			<select name="sensor" class="form-control" id="sensor"
-				onchange="this.form.submit()"> {% for sensor in sensors %}
-				{% if sensors[sensor].type == sensors[current_sensor].type and
-				sensors[sensor].status == "active" %}
+				onchange="this.form.submit()"> {% for sensor in config.sensors %}
+				{% if config.sensors[sensor].type == config.sensors[current_sensor].type and
+				config.sensors[sensor].status == "active" %}
 
 				<option {%if current_sensor==
-					sensor %}selected{% endif %} value={{sensor}}>{{sensors[sensor].alias}}</option>
+					sensor %}selected{% endif %} value={{sensor}}>{{config.sensors[sensor].alias}}</option>
 				{% endif %} {% endfor %}
 			</select>
 		</form>

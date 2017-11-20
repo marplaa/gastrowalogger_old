@@ -24,6 +24,11 @@ CREATE TABLE consumptions (
   FOREIGN KEY(sensor) REFERENCES sensors(id)
 );
 
+CREATE TABLE notes (
+  consumption integer primary key,
+  note text,
+  FOREIGN KEY(consumption) REFERENCES consumptions(id)
+);
 
 CREATE TABLE prices (
   id integer primary key autoincrement,
