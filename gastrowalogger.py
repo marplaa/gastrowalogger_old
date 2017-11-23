@@ -304,10 +304,10 @@ def get_calibration_data_():
             data["lowThres"] = device.get_value(sensor_device.LOW_THRES)
             data["value"] = device.get_value(sensor_device.SENSOR_VALUE)
             data["count"] = device.get_value(sensor_device.DATA)
-            return jsonify(data)
+            return jsonify({"status" : "ok" , "data" : data})
         except:
             raise
-            return jsonify(-1)
+            return jsonify({"status" : "error" , "msg" : gettext("Failed to get live data")})
         finally:
             if serialbus is not None:
                 serialbus.close()
@@ -395,19 +395,19 @@ def current_usage():
     db.close()
     return render_template('current_usage.html', euro_per_m3 = entry['amount'], sensor = sensor_name)
 
-@app.route('/sensor/_get_live_data', methods=['GET'])
-def _get_live_data():
-    
-    sensor_name = request.args.get("sensor")
-    sensor = sensors[sensor_name]
-    
-    try:
-        serialbus = connect_serialbus()
-        device = SerialBusDevice(sensor["address"], serialbus, device_type = sensor_device)
-        value = device.get_value(sensor_device.DATA);
-        return jsonify(value)
-    except:
-        return jsonify(-1)
+# @app.route('/sensor/_get_live_data', methods=['GET'])
+# def _get_live_data():
+#     
+#     sensor_name = request.args.get("sensor")
+#     sensor = sensors[sensor_name]
+#     
+#     try:
+#         serialbus = connect_serialbus()
+#         device = SerialBusDevice(sensor["address"], serialbus, device_type = sensor_device)
+#         value = device.get_value(sensor_device.DATA);
+#         return jsonify({"status" : "ok" , "data" : value})
+#     except:
+#         return jsonify({"status" : "error" , "msg" : gettext("Failed to get live data")})
 
 
 @app.route('/meters/meter_reading', methods=['GET'])

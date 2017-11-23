@@ -132,8 +132,9 @@ function loadSettings() {
 	$.getJSON($SCRIPT_ROOT + '/sensor/_get_settings?sensor=' + sensor, setSettings);
 }
 
-function new_data(data) {
-	if (data["status"] == "ok" && running) {
+function new_data(jsonData) {
+	if (jsonData["status"] == "ok" && running) {
+		data = jsonData["data"];
 		_data.shift();
 		_data.push(data["value"]);
 		myChart.update();
@@ -149,7 +150,6 @@ function new_data(data) {
 		impulseCount = data["count"];
 		setTimeout(request_Data, 60);
 	} else if (running) {
-		timer.pause();
 		running = false;
 		alertPopup(data.msg, "");
 		$("#button1").text("Start");

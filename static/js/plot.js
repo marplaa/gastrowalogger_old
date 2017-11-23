@@ -96,8 +96,10 @@ function newData(jsonData) {
 	if (jsonData["status"] == "ok") {
 
 		chart.data.datasets[0].data = jsonData["data"];
+		chart.data.datasets[0].borderColor = jsonData["bg"];
 		chart.data.long_labels = jsonData["long_labels"]
 		chart.data.labels = jsonData["labels"];
+		chart.data.notes = jsonData["notes"];
 		chart.update();
 		// Instantiate and draw our chart, passing in some options.
 
