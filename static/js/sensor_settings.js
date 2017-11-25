@@ -148,7 +148,8 @@ function new_data(jsonData) {
 			$("#impulsesBadge").effect( "highlight", {color:"#F55"}, 1000 );
 		}
 		impulseCount = data["count"];
-		setTimeout(request_Data, 60);
+
+		setTimeout(request_Data, 40);
 	} else if (running) {
 		running = false;
 		alertPopup(data.msg, "");

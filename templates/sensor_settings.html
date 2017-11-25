@@ -6,7 +6,8 @@
 </script>
 <!-- <script type=text/javascript -->
 <!-- 	src="{{url_for('static', filename='js/Chart.bundle.min.js') }}"></script> -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.bundle.js"></script>
+<script
+	src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.bundle.js"></script>
 
 <script type=text/javascript
 	src="{{url_for('static', filename='js/jquery-ui.min.js') }}"></script>
@@ -14,19 +15,21 @@
 
 <div class="page-header">
 	<h3>
-		<span id="sensor_icon"></span> {{_("Sensor settings")}} 
-			<form style="display: inline" class="form-inline" method="get"
-				action="/sensor/sensor">
+		<span id="sensor_icon"></span> {{_("Sensor settings")}}
+		<form style="display: inline" class="form-inline" method="get"
+			action="/sensor/sensor">
 
-				<select name="sensor" class="form-control" id="sensor"
-					onchange="this.form.submit()"> {% for _sensor in config.sensors %}
-					{% if config.sensors[_sensor].type == sensor.type and config.sensors[_sensor].status == "active" %}
+			<select name="sensor" class="form-control" id="sensor"
+				onchange="this.form.submit()"> {% for _sensor in
+				config.sensors %} {% if config.sensors[_sensor].type == sensor.type
+				and config.sensors[_sensor].status == "active" %}
 
-					<option {%if _sensor == sensor %}selected{% endif %} value="{{_sensor}}">{{config.sensors[_sensor].alias}}</option>
-					{% endif %} {% endfor %}
-				</select>
-			</form>
-		
+				<option {%if _sensor==
+					sensor %}selected{% endif %} value="{{_sensor}}">{{config.sensors[_sensor].alias}}</option>
+				{% endif %} {% endfor %}
+			</select>
+		</form>
+
 	</h3>
 </div>
 
@@ -49,15 +52,14 @@ $("#sensor_icon").css("color", icon_mapping["{{sensor.type}}"]["color"]);
 			</div>
 			<div class="panel-body">
 				<table style="width: 100%">
-				    <tr>
-						<td><b>Alias</b>
-						<!-- Button trigger edit - modal -->
-						<button type="button" class="btn btn-default btn-xs pull-right" style="margin-right: 10px;" data-toggle="modal"
-							data-target="#newAliasModal"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span>{{_("edit")}}</button>
-						</td>
-						<td>{{ sensor.alias }} 
-						
-						</td>
+					<tr>
+						<td><b>Alias</b> <!-- Button trigger edit - modal -->
+							<button type="button" class="btn btn-default btn-xs pull-right"
+								style="margin-right: 10px;" data-toggle="modal"
+								data-target="#newAliasModal">
+								<span class="glyphicon glyphicon-edit" aria-hidden="true"></span>{{_("edit")}}
+							</button></td>
+						<td>{{ sensor.alias }}</td>
 					</tr>
 					<tr>
 						<td><b>Label</b></td>
@@ -166,7 +168,7 @@ $("#sensor_icon").css("color", icon_mapping["{{sensor.type}}"]["color"]);
 									invert
 								</label>
 							</div>
-						
+
 						</form>
 					</div>
 
@@ -197,7 +199,12 @@ $("#sensor_icon").css("color", icon_mapping["{{sensor.type}}"]["color"]);
 			Plot:
 			<button id="button1" class="btn btn-success btn-xs"
 				style="margin-right: 20px;">Start</button>
+
+
+
 			<div style="display: inline-block;">
+
+
 				<div
 					style="margin-right: 5px; border-radius: 2px; display: inline-block; background-color: #A11; width: 10px; height: 10px; position: relative">
 				</div>
@@ -284,13 +291,13 @@ $("#sensor_icon").css("color", icon_mapping["{{sensor.type}}"]["color"]);
 			</div>
 			<div class="modal-body">
 
-				<form id="newAliasForm" method="post"
-					action="/sensor/rename">
+				<form id="newAliasForm" method="post" action="/sensor/rename">
 					<input type="hidden" name="sensor" value="{{ current_sensor }}">
 
 					<div class="form-group">
-						<label for="new_alias">{{_("New alias")}}:</label> <input type="text"
-							class="form-control" name="new_alias" id="new_alias" value="">
+						<label for="new_alias">{{_("New alias")}}:</label> <input
+							type="text" class="form-control" name="new_alias" id="new_alias"
+							value="">
 					</div>
 
 				</form>
