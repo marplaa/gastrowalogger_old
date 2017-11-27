@@ -71,15 +71,16 @@ function init_charts() {
 	// ######### l_per_min ##############
     if (getCookie("start_count_l_per_min") == "") {
     	$.getJSON($SCRIPT_ROOT + '/sensor/_get_live_data?sensor='+sensor, 
-    		function (data) {
-    			start_count_l_per_min = data;
+    		function (jsonData) {
+    			start_count_l_per_min = jsonData["data"];
     			setCookie("start_count_l_per_min", start_count_l_per_min, 1);
     		}
     	);
     	
     } else {
     	$.getJSON($SCRIPT_ROOT + '/sensor/_get_live_data?sensor=' + sensor, 
-        		function (data) {
+        		function (jsonData) {
+    		        data = jsonData["data"];
         			if (data >= parseInt(getCookie("start_count_l_per_min"))) {
         				start_count_l_per_min = parseInt(getCookie("start_count_l_per_min"));
         			} else {
@@ -91,7 +92,7 @@ function init_charts() {
     	
     }
     
-    //start_time_l_per_min = getCookie("start_time_l_per_min");
+    // start_time_l_per_min = getCookie("start_time_l_per_min");
 	
     if (getCookie("start_time_l_per_min") == "") {
     	start_time_l_per_min = Date.now();
@@ -104,15 +105,16 @@ function init_charts() {
  // ######### liters ##############
     if (getCookie("start_count_l") == "") {
     	$.getJSON($SCRIPT_ROOT + '/sensor/_get_live_data?sensor=' + sensor, 
-    		function (data) {
-    			start_count_l = data;
+    		function (jsonData) {
+    			start_count_l = jsonData["data"];
     			setCookie("start_count_l", start_count_l, 1);
     		}
     	);
     	
     } else {
     	$.getJSON($SCRIPT_ROOT + '/sensor/_get_live_data?sensor=' + sensor, 
-        		function (data) {
+        		function (jsonData) {
+    		        data = jsonData["data"];
         			if (data >= parseInt(getCookie("start_count_l"))) {
         				start_count_l = parseInt(getCookie("start_count_l"));
         			} else {
@@ -151,8 +153,8 @@ function init_charts() {
 
 function reset_l_per_min () {
 	$.getJSON($SCRIPT_ROOT + '/sensor/_get_live_data?sensor=' + sensor, 
-    		function (data) {
-    			start_count_l_per_min = data;
+    		function (jsonData) {
+    			start_count_l_per_min = jsonData["data"];
     			setCookie("start_count_l_per_min", start_count_l_per_min, 1);
     			start_time_l_per_min = Date.now();
     			setCookie("start_time_l_per_min", start_time_l_per_min, 1);
@@ -166,14 +168,15 @@ function reset_l_per_min () {
 
 function reset_l() {
 	$.getJSON($SCRIPT_ROOT + '/sensor/_get_live_data?sensor=' + sensor, 
-    		function (data) {
-    			start_count_l = data;
+    		function (jsonData) {
+    			start_count_l = jsonData["data"];
     			setCookie("start_count_l", start_count_l, 1);
     			start_time_l = Date.now();
     			setCookie("start_time_l", start_time_l, 1);
     			$("#sinceSpan_l").text(new Date(start_time_l).toLocaleTimeString());
     			$("#zeros").text("000000");
     	        $("#liters").text("");
+    	        $("#euro_sum").text("0 €");
     		}
     	);
 	
@@ -181,25 +184,22 @@ function reset_l() {
 
 
 function drawChart_l_per_min() {
-	
 	chart_l_per_min.draw(data_l_per_min, options_l_per_min);
-
 }
 
-function new_data(data) {
-	if (data != -1 && running) {
+function new_data(jsonData) {
+	if (jsonData["status"] == "ok" && running) {
 		
-		
+		data = jsonData["data"];
 		// ###### l_per_min #####
 		if (data - start_count_l_per_min != 0) {
 			l_per_min = (data - start_count_l_per_min) / ((Date.now() - start_time_l_per_min) / minutes);
 			
 			data_l_per_min.setValue(0, 1, l_per_min);
 	        chart_l_per_min.draw(data_l_per_min, options_l_per_min);
-	        
 		}
 		
-		// ######## l_per_min    end
+		// ######## l_per_min end
 		
 		
 		// ###### liters

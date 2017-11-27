@@ -1,20 +1,19 @@
 /*
-    Copyright 2016, 2017 Martin Plaas
+ Copyright 2016, 2017 Martin Plaas
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include "Arduino.h"
 #include "SerialBus.h"
@@ -114,25 +113,12 @@ boolean SerialBus::waiting() {
 
 void SerialBus::check() {
 
-#ifdef DEBUG
-	_serial->println("checking");
-#endif
-
 	if (_timeout_r != 0 && (millis() > _timeout_r) && !_serial->available()) {
 		// Message took to long, error
-#ifdef DEBUG
-		_serial->println("message not complete after timeout");
-#endif
+
 		cleanUp();
 	} else {
-#ifdef DEBUG
-		_serial->println("kein timeout: ");
-		_serial->print("timeout - millis:");
-		_serial->println(_timeout_r - millis(), DEC);
-		_serial->print("serial available: ");
-		_serial->println(!_serial->available());
 
-#endif
 	}
 
 	while (_serial->available()) {
@@ -144,17 +130,11 @@ void SerialBus::check() {
 
 				_msg_index = 1;
 				_message_in[0] = inByte;
-#ifdef DEBUG
-				_serial->print("First part of header received ");
-				_serial->println(_msg_index, DEC);
-#endif
 			}
 		} else {
 			if (_msg_index > 3 && _msg_index <= _message_in_length + 4) {
 				// Message is retrieved here ########################
-#ifdef DEBUG
-				_serial->println("retrieve message");
-#endif
+
 				_message_in[_msg_index] = inByte;
 				_msg_index++;
 				while (_serial->available()
@@ -163,25 +143,18 @@ void SerialBus::check() {
 					_message_in[_msg_index] = inByte;
 					_msg_index++;
 				}
-#ifdef DEBUG
-				_serial->println(_msg_index, DEC);
-#endif
+
 				if (_msg_index == _message_in_length + 5) {
 					//Transmission complete!!!!!
-					
+
 					_last_byte_millis = millis();
 
 					_checksum_in = _message_in[_msg_index - 1];
 					_message_in[_msg_index - 1] = B0;
-#ifdef DEBUG
-					_serial->print("Transmission complete! Checksum: ");
-					_serial->println(_checksum_in, DEC);
-#endif
+
 					if (get_XOR_checksum(_message_in, 4 + _message_in_length)
 							== _checksum_in) {
-#ifdef DEBUG
-						_serial->println("Checksum correct!");
-#endif
+
 						_timeout_r = 0;
 						_msg_index = 0;
 
@@ -189,56 +162,34 @@ void SerialBus::check() {
 						//return;
 
 					} else {
-#ifdef DEBUG
-						_serial->println("Checksum incorrect!");
-						_serial->print("Expected Checksum: ");
-						_serial->println(
-								get_XOR_checksum(_message_in,
-										4 + _message_in_length), BIN);
-#endif
 						cleanUp();
 					}
 
 				}
 
 			} else if (_msg_index == 1) {
-#ifdef DEBUG
-				_serial->print("Checking for second header part ");
-				_serial->println(inByte, BIN);
-#endif
+
 				if (((inByte & B00011111) == _myAddress) && (inByte & B10000000)
 						&& (inByte | B01100000)) {
-#ifdef DEBUG
-					_serial->println("second part of header received");
-#endif
+
 					_permission_to_send = (inByte & B00100000);
 					_msg_index = 2;
 					_message_in[1] = inByte;
 
 				} else {
-#ifdef DEBUG
-					_serial->println("Not my address");
-#endif
 					if (inByte == B11111111) {
 						_msg_index = 1;
 					} else {
 						_msg_index = 0;
 					}
-
 				}
 			} else if (_msg_index == 2) {
-#ifdef DEBUG
-				_serial->print("Checking for third header part ");
-				_serial->println(inByte, BIN);
-#endif
+
 				if (inByte == B11111111) {
-#ifdef DEBUG
-					_serial->println("third part of header received");
-#endif
+
 					_msg_index = 3;
 					_message_in[2] = inByte;
 				} else {
-
 					_msg_index = 0;
 
 				}
@@ -253,15 +204,8 @@ void SerialBus::check() {
 					_timeout_r = millis()
 							+ ((_message_in_length + 1) * (_baudrate / 8000))
 							+ 2000;
-#ifdef DEBUG
-					_serial->print("header complete! Length: ");
-					_serial->println(_message_in_length, DEC);
-					_serial->print("timeout - millis:");
-					_serial->println(_timeout_r - millis(), DEC);
 
-#endif
 				} else {
-
 					if (inByte == B11111111) {
 						_msg_index = 1;
 					} else {
@@ -271,13 +215,8 @@ void SerialBus::check() {
 			}
 		}
 
-		// get the new byte:
-
 	}
-	/*if (_permission_to_send && _data_pending) {
-	 delay(10);
-	 transmitDataBlock();
-	 }*/
+
 }
 
 void SerialBus::cleanUp() {
@@ -290,36 +229,20 @@ void SerialBus::cleanUp() {
 
 void SerialBus::newMessageReceived() {
 
-	if (_message_in[1] & B01000000) {
-#ifdef DEBUG
-		_serial->print("checksum to ack: ");
-		_serial->println(_checksum_to_ack);
-		_serial->print("checksum received: ");
-		_serial->println(_message_in[4]);
+	if ((_message_in[1] & B01100000) && _data_pending) {
+		// send next part
+		//delay(10);
+		transmitDataBlock();
 
-#endif
+	} else if (_wait_for_ack) {
+		if (_message_in[4] == _checksum_to_ack) { // is ack
 
-		if (_message_in[1] & B00100000) {
-			// send next part
-
-			if (_permission_to_send && _data_pending) {
-
-				//delay(10);
-				transmitDataBlock();
-
-			}
-
-		} else if (_wait_for_ack) {
-			if (_message_in[4] == _checksum_to_ack) { // is ack
-
-				_data_acked = true;
-				_checksum_to_ack = 0;
-				_wait_for_ack = false;
-				cleanUp();
-				if (_callback_ack != NULL) {
-					_callback_ack();
-				}
-
+			_data_acked = true;
+			_checksum_to_ack = 0;
+			_wait_for_ack = false;
+			cleanUp();
+			if (_callback_ack != NULL) {
+				_callback_ack();
 			}
 		}
 	} else {
@@ -329,17 +252,15 @@ void SerialBus::newMessageReceived() {
 		}
 		_callback_function(msg, _message_in_length);
 		cleanUp();
-		
+
 	}
 
 }
 
-
-
 boolean SerialBus::sendRawMessage(byte msg[], byte msg_length) {
-	
+
 	while (millis() < _last_byte_millis + _wait_to_send_time) {
-		
+
 	}
 
 	byte i = 0;
@@ -360,7 +281,6 @@ boolean SerialBus::sendRawMessage(byte msg[], byte msg_length) {
 
 	return true;
 }
-
 
 void SerialBus::createHeader(byte message[], byte size, boolean pending,
 		boolean ack) {
@@ -446,6 +366,7 @@ byte SerialBus::transmitDataBlock() {
 		}
 		byte chksm = get_XOR_checksum(message, message_size + 3);
 		message[message_size + 4] = chksm;
+		_permission_to_send = false;
 		if (sendRawMessage(message, message_size + 5)) {
 			if (_data_out_index < _data_out_length - 1) {
 				_data_pending = true;
@@ -453,15 +374,11 @@ byte SerialBus::transmitDataBlock() {
 				_data_pending = false;
 				_data_out_index = 0;
 			}
-			_permission_to_send = false;
 			return chksm;
 		} else {
 			_data_out = _data_out_old;
 			_data_out_index = _data_out_index_old;
 		}
-
-		_permission_to_send = false;
-
 	}
 	return 0;
 }
