@@ -157,6 +157,16 @@ function quickSelect() {
 
 
 		</div>
+		
+		<div class="panel panel-default">
+			<div class="panel-heading">Notes</div>
+			<div class="panel-body">
+				<form id="notes"
+				action="charts/_get_csv?sensor={{current_sensor}}" method="post">
+				</form>
+			</div>
+		</div>
+		
 
 		<div class="panel panel-default">
 			<div class="panel-heading">Download</div>
@@ -204,14 +214,10 @@ function quickSelect() {
   $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
      $( function() {
     $( "#von_datepicker" ).datepicker({ dateFormat: 'dd.mm.yy' });
-  } );
-
-$( function() {
     $( "#bis_datepicker" ).datepicker({ dateFormat: 'dd.mm.yy' });
+    $( "#note_datepicker" ).datepicker({ dateFormat: 'dd.mm.yy' });
+    $( "#modal_note_datepicker" ).datepicker({ dateFormat: 'dd.mm.yy' });
   } );
-
-
-
 
 
 var today = Date.today();
@@ -232,6 +238,28 @@ setSensor("{{current_sensor}}");
 </script>
 
 
+
+
+<div id="note-modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">{{_("New note")}}</h4>
+      </div>
+      <div class="modal-body">
+        <form id="modal-notes">
+				</form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+
+  </div>
+</div>
 
 
 {% endblock %}
