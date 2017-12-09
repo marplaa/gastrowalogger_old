@@ -25,9 +25,10 @@ CREATE TABLE consumptions (
 );
 
 CREATE TABLE notes (
-  consumption integer primary key,
-  note text,
-  FOREIGN KEY(consumption) REFERENCES consumptions(id)
+  id integer primary key autoincrement,
+  'timestamp' integer,
+  type text,
+  note text
 );
 
 CREATE TABLE prices (

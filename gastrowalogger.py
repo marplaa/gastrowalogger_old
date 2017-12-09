@@ -649,7 +649,10 @@ def get_data(sensor, from_date_time, to_date_time, resolution, locale):
     
     db = get_db()
     
-    cur = db.execute("SELECT timestamp, count, note from consumptions LEFT JOIN notes ON consumptions.id = notes.consumption where sensor = ? and timestamp between ? and ? ORDER BY timestamp", (sensor["id"], from_date_time_utc.timestamp(), to_date_time_utc.timestamp()))
+    cur = db.execute("SELECT timestamp, note from notes where type = ? and timestamp between ? and ? ORDER BY timestamp", (sensor["type"], from_date_time_utc.timestamp(), to_date_time_utc.timestamp()))
+    notes_list = cur.fetchall()
+    cur = db.execute("SELECT timestamp, count from consumptions where sensor = ? and timestamp between ? and ? ORDER BY timestamp", (sensor["id"], from_date_time_utc.timestamp(), to_date_time_utc.timestamp()))
+    row = cur.fetchone()
 
     data['columns'] = ["from_datetime", "to_datetime", "values", "notes"]
     
@@ -675,7 +678,7 @@ def get_data(sensor, from_date_time, to_date_time, resolution, locale):
 
     until = from_date_time_tz + timedelta(seconds = resolution) #- (from_time % resolution)) #  +  resolution
     
-    row = cur.fetchone()
+    
     #timestamp_aktuell = row['timestamp'] #+ 3600
     if row is not None:
         current_date = tz.fromutc(datetime.utcfromtimestamp(row['timestamp'])) #+ 2*3600
@@ -696,8 +699,11 @@ def get_data(sensor, from_date_time, to_date_time, resolution, locale):
             if (current_date < until):
                 while current_date < datetime_to:
                     sumcount += row['count']
-                    if row['note'] is not None:
-                        notes.append({"datetime" : current_date, "note" : row['note']})
+                    if len(notes_list) > 0:
+                        note = notes_list[0]
+                        if note is not None and note['timestamp'] <= current_date.astimezone(pytz.timezone('UTC')).timestamp():
+                            notes.append({"datetime" : current_date, "note" : note['note']})
+                            notes_list.pop(0)
                     row = cur.fetchone()
                     if (row == None):
                         end_of_data = True
